@@ -1,0 +1,87 @@
+{
+  "pages": [
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/login/phone",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "手机号登录"
+      }
+    },
+    {
+      "path": "pages/login/password",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "密码登录"
+      }
+    },
+    {
+      "path": "pages/login/register",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "注册"
+      }
+    },
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "首页"
+      }
+    },
+    {
+      "path": "pages/message/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "消息"
+      }
+    },
+    {
+      "path": "pages/scan/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "扫一扫"
+      }
+    },
+    {
+      "path": "pages/mine/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "个人中心"
+      }
+    },
+    {
+      "path": "pages/building/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "建筑列表"
+      }
+    },
+    {
+      "path": "pages/building/form",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "建筑登记"
+      }
+    },
+    {
+      "path": "pages/building/detail",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "建筑信息"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "智慧消防设备管家",
+    "navigationBarBackgroundColor": "#E53935",
+    "backgroundColor": "#F5F5F5"
+  }
+}
