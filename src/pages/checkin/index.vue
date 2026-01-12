@@ -280,20 +280,72 @@ const chooseImage = () => {
 const uploadImg = async (tempPath) => {
   try {
     // 先添加临时路径用于显示
-    const imgObj = { tempPath: tempPath, serverUrl: "" };
+    const imgObj = { tempPath: tempPath, serverUrl: "", uploading: true };
     imageList.value.push(imgObj);
     const currentIndex = imageList.value.length - 1;
 
-    const res = await api.uploadFile(tempPath);
-    const url = res.url || (res.data && res.data.url) || res.fileName;
-    if (url) {
-      // 更新服务器URL
-      imageList.value[currentIndex].serverUrl = url;
-    } else {
-      // 上传失败，移除
-      imageList.value.splice(currentIndex, 1);
-      uni.showToast({ title: "上传失败", icon: "none" });
-    }
+    // 获取 token
+    const token = uni.getStorageSync("token");
+
+    // 直接调用 /common/upload 接口
+    uni.uploadFile({
+      url: BASE_URL + "/common/upload",
+      filePath: tempPath,
+      name: "file",
+      formData: {},
+      header: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+      success: (uploadRes) => {
+        try {
+          console.log("上传响应原始数据:", uploadRes.data);
+          const res = JSON.parse(uploadRes.data);
+          console.log("上传响应解析后:", res);
+
+          // 处理返回的 URL - 支持多种格式
+          let url = null;
+
+          // 如果返回的是数组（uploads 接口可能返回文件列表）
+          if (Array.isArray(res)) {
+            url = res[0]?.url || res[0]?.fileName || res[0]?.filePath;
+          } else if (res.data && Array.isArray(res.data)) {
+            url =
+              res.data[0]?.url ||
+              res.data[0]?.fileName ||
+              res.data[0]?.filePath;
+          } else {
+            // 常规对象格式
+            url =
+              res.url ||
+              res.fileName ||
+              res.filePath ||
+              (res.data &&
+                (res.data.url || res.data.fileName || res.data.filePath));
+          }
+
+          console.log("提取的URL:", url);
+
+          if (url) {
+            imageList.value[currentIndex].serverUrl = url;
+            imageList.value[currentIndex].uploading = false;
+            console.log("图片上传成功，URL:", url);
+          } else {
+            console.error("上传返回无效URL:", res);
+            imageList.value.splice(currentIndex, 1);
+            uni.showToast({ title: res.msg || "上传失败", icon: "none" });
+          }
+        } catch (e) {
+          console.error("解析上传响应失败", e, uploadRes.data);
+          imageList.value.splice(currentIndex, 1);
+          uni.showToast({ title: "上传失败", icon: "none" });
+        }
+      },
+      fail: (err) => {
+        console.error("上传图片失败", err);
+        imageList.value.splice(currentIndex, 1);
+        uni.showToast({ title: "上传失败", icon: "none" });
+      },
+    });
   } catch (e) {
     console.error("上传图片失败", e);
     uni.showToast({ title: "上传失败", icon: "none" });
@@ -329,6 +381,8 @@ const handleSubmit = async () => {
       companyId: selectedCompanyId.value,
       checkInType: checkType.value,
       checkInAddress: currentAddress.value,
+      latitude: latitude.value,
+      longitude: longitude.value,
       remark: remark.value,
       imageUrls: imageList.value.map((img) => img.serverUrl).join(","),
     };
