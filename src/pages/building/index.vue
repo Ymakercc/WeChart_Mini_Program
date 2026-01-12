@@ -14,21 +14,23 @@
       <view
         class="building-card"
         v-for="item in buildingList"
-        :key="item.id"
+        :key="item.buildingId"
         @tap="goDetail(item)"
       >
         <view class="card-header">
-          <text class="building-name">{{ item.name }}</text>
+          <text class="building-name">{{ item.buildingName }}</text>
         </view>
         <view class="card-content">
           <view class="info-row">
             <view class="info-item">
               <text class="info-label">建筑高度</text>
-              <text class="info-value">{{ item.height }}m</text>
+              <text class="info-value">{{ item.buildingHeight }}m</text>
             </view>
             <view class="info-item">
               <text class="info-label">建筑楼层</text>
-              <text class="info-value">{{ item.totalFloors }}层</text>
+              <text class="info-value"
+                >{{ item.floors || item.floorCount }}层</text
+              >
             </view>
           </view>
           <view class="info-row">
@@ -48,7 +50,7 @@
             </view>
             <view class="info-item">
               <text class="info-label">建筑面积</text>
-              <text class="info-value">{{ item.buildingArea }}m²</text>
+              <text class="info-value">{{ item.area }}m²</text>
             </view>
           </view>
         </view>
@@ -68,115 +70,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import api from "@/api/index";
+import { onMounted, onUnmounted, ref } from "vue";
 
 const buildingList = ref([]);
-
-// 假数据
-const mockBuildingList = [
-  {
-    id: 1,
-    name: "滨海支行",
-    height: 4.6,
-    totalFloors: 1,
-    aboveGroundFloors: 1,
-    undergroundFloors: 0,
-    landArea: 594.52,
-    buildingArea: 594.52,
-    hasFireFacilities: true,
-    address: "阳江市江城区东风二路东怡花园",
-    buildingType: "单、多层民用建筑",
-    safetyExits: 2,
-    evacuationStairs: 1,
-    fireElevators: 0,
-    refugeFloor: "",
-  },
-  {
-    id: 2,
-    name: "东怡支行",
-    height: 4.6,
-    totalFloors: 1,
-    aboveGroundFloors: 1,
-    undergroundFloors: 0,
-    landArea: 500,
-    buildingArea: 500,
-    hasFireFacilities: true,
-    address: "阳江市江城区东风二路东怡花园",
-    buildingType: "单、多层民用建筑",
-    safetyExits: 2,
-    evacuationStairs: 0,
-    fireElevators: 0,
-    refugeFloor: "",
-  },
-  {
-    id: 3,
-    name: "江城支行",
-    height: 4.6,
-    totalFloors: 1,
-    aboveGroundFloors: 1,
-    undergroundFloors: 0,
-    landArea: 420,
-    buildingArea: 420,
-    hasFireFacilities: true,
-    address: "阳江市江城区建设路",
-    buildingType: "单、多层民用建筑",
-    safetyExits: 2,
-    evacuationStairs: 1,
-    fireElevators: 0,
-    refugeFloor: "",
-  },
-  {
-    id: 4,
-    name: "阳春支行",
-    height: 4.6,
-    totalFloors: 1,
-    aboveGroundFloors: 1,
-    undergroundFloors: 0,
-    landArea: 659.95,
-    buildingArea: 659.95,
-    hasFireFacilities: false,
-    address: "阳春市迎宾大道",
-    buildingType: "单、多层民用建筑",
-    safetyExits: 2,
-    evacuationStairs: 1,
-    fireElevators: 0,
-    refugeFloor: "",
-  },
-  {
-    id: 5,
-    name: "阳东支行",
-    height: 4.6,
-    totalFloors: 2,
-    aboveGroundFloors: 2,
-    undergroundFloors: 0,
-    landArea: 439.49,
-    buildingArea: 439.49,
-    hasFireFacilities: true,
-    address: "阳江市阳东区金山路",
-    buildingType: "单、多层民用建筑",
-    safetyExits: 2,
-    evacuationStairs: 1,
-    fireElevators: 0,
-    refugeFloor: "",
-  },
-  {
-    id: 6,
-    name: "阳江分行本部",
-    height: 46,
-    totalFloors: 13,
-    aboveGroundFloors: 13,
-    undergroundFloors: 0,
-    landArea: 800,
-    buildingArea: 2400,
-    hasFireFacilities: true,
-    address: "阳江市东风三路38号景湖花园综合楼",
-    buildingType: "高层民用建筑",
-    safetyExits: 4,
-    evacuationStairs: 2,
-    fireElevators: 1,
-    refugeFloor: "7层",
-  },
-];
 
 // 返回上一页
 const goBack = () => {
@@ -195,41 +92,62 @@ const goDetail = (item) => {
   // 将建筑信息存入缓存
   uni.setStorageSync("currentBuilding", item);
   uni.navigateTo({
-    url: `/pages/building/detail?id=${item.id}`,
+    url: `/pages/building/detail?id=${item.buildingId}`,
   });
 };
 
 // 加载建筑列表
 const loadBuildingList = async () => {
   try {
-    // TODO: 替换为真实接口
-    // const res = await api.getBuildingList();
-    // if (res.data) {
-    //   buildingList.value = res.data;
-    // }
+    const companyId = uni.getStorageSync("selectedCompanyId");
+    if (!companyId) {
+      uni.showToast({ title: "请先选择公司", icon: "none" });
+      return;
+    }
 
-    // 使用假数据
-    buildingList.value = mockBuildingList;
+    const res = await api.getBuildingList({
+      companyId: companyId,
+      buildingName: "",
+      pageNum: 1,
+      pageSize: 50,
+    });
+
+    if (res.code === 200 || res.code === 0) {
+      const data = res.rows || res.data || [];
+      buildingList.value = Array.isArray(data)
+        ? data
+        : data.rows || data.list || [];
+    } else {
+      buildingList.value = [];
+    }
   } catch (e) {
     console.error("获取建筑列表失败:", e);
-    buildingList.value = mockBuildingList;
+    uni.showToast({ title: "获取建筑列表失败", icon: "none" });
+    buildingList.value = [];
   }
+};
+
+// 刷新列表的事件处理函数
+const handleRefresh = () => {
+  loadBuildingList();
 };
 
 onMounted(() => {
   loadBuildingList();
+  // 注册事件监听器
+  uni.$on("refreshBuildingList", handleRefresh);
 });
 
-// 页面显示时刷新数据（从新增/编辑页面返回时）
-uni.$on("refreshBuildingList", () => {
-  loadBuildingList();
+onUnmounted(() => {
+  // 清理事件监听器，防止重复注册
+  uni.$off("refreshBuildingList", handleRefresh);
 });
 </script>
 
 <style scoped>
 .page {
   width: 100vw;
-  /* height: 100vh; */
+  height: 100vh;
   background-color: #fff;
   display: flex;
   flex-direction: column;

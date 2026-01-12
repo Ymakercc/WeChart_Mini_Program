@@ -15,6 +15,17 @@
       <scroll-view class="content-item" scroll-y>
         <!-- 白色卡片容器 -->
         <view class="card-wrapper">
+          <!-- 建筑编号 -->
+          <view class="form-item">
+            <text class="form-label">建筑编号</text>
+            <input
+              class="form-input"
+              type="text"
+              placeholder="必填"
+              v-model="formData.buildingCode"
+            />
+          </view>
+
           <!-- 建筑名称 -->
           <view class="form-item">
             <text class="form-label">建筑名称</text>
@@ -22,7 +33,7 @@
               class="form-input"
               type="text"
               placeholder="必填"
-              v-model="formData.name"
+              v-model="formData.buildingName"
             />
           </view>
 
@@ -103,7 +114,7 @@
               class="form-input"
               type="digit"
               placeholder="选填"
-              v-model="formData.buildingArea"
+              v-model="formData.area"
             />
           </view>
 
@@ -114,7 +125,7 @@
               class="form-input"
               type="digit"
               placeholder="必填"
-              v-model="formData.height"
+              v-model="formData.buildingHeight"
             />
           </view>
 
@@ -125,7 +136,7 @@
               class="form-input"
               type="number"
               placeholder="必填"
-              v-model="formData.totalFloors"
+              v-model="formData.floors"
             />
           </view>
 
@@ -151,6 +162,39 @@
             />
           </view>
 
+          <!-- 结构类型 -->
+          <view class="form-item">
+            <text class="form-label">结构类型</text>
+            <input
+              class="form-input"
+              type="text"
+              placeholder="如：钢结构、砖混"
+              v-model="formData.structureType"
+            />
+          </view>
+
+          <!-- 耐火等级 -->
+          <view class="form-item">
+            <text class="form-label">耐火等级</text>
+            <input
+              class="form-input"
+              type="text"
+              placeholder="如：一级、二级"
+              v-model="formData.fireResistanceLevel"
+            />
+          </view>
+
+          <!-- 防火分区数 -->
+          <view class="form-item">
+            <text class="form-label">防火分区数</text>
+            <input
+              class="form-input"
+              type="number"
+              placeholder="选填"
+              v-model="formData.fireZoneCount"
+            />
+          </view>
+
           <!-- 安全出口 -->
           <view class="form-item">
             <text class="form-label">安全出口(个)</text>
@@ -158,40 +202,55 @@
               class="form-input"
               type="number"
               placeholder="选填"
-              v-model="formData.safetyExits"
+              v-model="formData.evacuationExitCount"
             />
           </view>
 
-          <!-- 疏散楼梯数 -->
+          <!-- 竣工日期 -->
           <view class="form-item">
-            <text class="form-label">疏散楼梯数(个)</text>
+            <text class="form-label">竣工日期</text>
+            <picker
+              mode="date"
+              class="form-picker-wrapper"
+              @change="(e) => (formData.completionDate = e.detail.value)"
+            >
+              <view class="form-picker-value">
+                <text :class="{ placeholder: !formData.completionDate }">
+                  {{ formData.completionDate || "请选择" }}
+                </text>
+                <text class="picker-arrow">›</text>
+              </view>
+            </picker>
+          </view>
+
+          <!-- 经纬度 -->
+          <view class="form-item">
+            <text class="form-label">经度</text>
             <input
               class="form-input"
-              type="number"
+              type="digit"
               placeholder="选填"
-              v-model="formData.evacuationStairs"
+              v-model="formData.longitude"
             />
           </view>
-
-          <!-- 消防电梯数 -->
           <view class="form-item">
-            <text class="form-label">消防电梯数(个)</text>
+            <text class="form-label">纬度</text>
             <input
               class="form-input"
-              type="number"
+              type="digit"
               placeholder="选填"
-              v-model="formData.fireElevators"
+              v-model="formData.latitude"
             />
           </view>
 
-          <!-- 避难层位置 -->
+          <!-- 备注 -->
           <view class="form-item last">
-            <text class="form-label">避难层位置</text>
+            <text class="form-label">备注</text>
             <input
               class="form-input"
               type="text"
               placeholder="选填"
-              v-model="formData.refugeFloor"
+              v-model="formData.remark"
             />
           </view>
         </view>
@@ -238,6 +297,7 @@
 </template>
 
 <script setup>
+import api from "@/api/index";
 import { onMounted, ref } from "vue";
 
 const isEdit = ref(false);
@@ -255,21 +315,27 @@ const buildingTypes = [
 
 // 表单数据
 const formData = ref({
-  id: null,
-  name: "",
-  hasFireFacilities: false,
-  address: "",
+  buildingId: null,
+  buildingCode: "",
+  buildingName: "",
   buildingType: "",
-  landArea: "",
-  buildingArea: "",
-  height: "",
-  totalFloors: "",
-  aboveGroundFloors: "",
+  floors: "",
   undergroundFloors: "",
-  safetyExits: "",
-  evacuationStairs: "",
-  fireElevators: "",
-  refugeFloor: "",
+  area: "",
+  buildingHeight: "",
+  structureType: "",
+  fireResistanceLevel: "",
+  fireZoneCount: "",
+  evacuationExitCount: "",
+  completionDate: "",
+  address: "",
+  longitude: "",
+  latitude: "",
+  remark: "",
+  // 旧字段保留或备用
+  hasFireFacilities: false,
+  landArea: "",
+  aboveGroundFloors: "",
 });
 
 // 返回上一页
@@ -290,15 +356,15 @@ const confirmType = () => {
 
 // 表单验证
 const validateForm = () => {
-  if (!formData.value.name.trim()) {
+  if (!formData.value.buildingName || !formData.value.buildingName.trim()) {
     uni.showToast({ title: "请输入建筑名称", icon: "none" });
     return false;
   }
-  if (!formData.value.height) {
+  if (!formData.value.buildingHeight) {
     uni.showToast({ title: "请输入建筑高度", icon: "none" });
     return false;
   }
-  if (!formData.value.totalFloors) {
+  if (!formData.value.floors) {
     uni.showToast({ title: "请输入建筑层数", icon: "none" });
     return false;
   }
@@ -314,28 +380,60 @@ const handleSave = async () => {
   if (!validateForm()) return;
 
   try {
-    // TODO: 替换为真实接口
-    // if (isEdit.value) {
-    //   await api.updateBuilding(formData.value);
-    // } else {
-    //   await api.addBuilding(formData.value);
-    // }
+    uni.showLoading({ title: "正在保存..." });
 
-    // 模拟保存成功
-    uni.showToast({
-      title: isEdit.value ? "编辑成功" : "添加成功",
-      icon: "success",
-    });
+    // 获取当前选中的公司 ID
+    const companyId = uni.getStorageSync("selectedCompanyId");
+    if (!companyId) {
+      uni.showToast({ title: "未获取到公司信息", icon: "none" });
+      return;
+    }
 
-    // 通知列表页刷新
-    uni.$emit("refreshBuildingList");
+    // 构造提交负载，确保数值类型正确
+    const payload = {
+      ...formData.value,
+      companyId: Number(companyId),
+      floors: Number(formData.value.floors),
+      undergroundFloors: Number(formData.value.undergroundFloors || 0),
+      area: Number(formData.value.area || 0),
+      buildingHeight: Number(formData.value.buildingHeight),
+      fireZoneCount: Number(formData.value.fireZoneCount || 0),
+      evacuationExitCount: Number(formData.value.evacuationExitCount || 0),
+      longitude: formData.value.longitude
+        ? Number(formData.value.longitude)
+        : null,
+      latitude: formData.value.latitude
+        ? Number(formData.value.latitude)
+        : null,
+    };
 
-    setTimeout(() => {
-      uni.navigateBack();
-    }, 1500);
+    let res;
+    if (isEdit.value) {
+      res = await api.updateBuilding(payload);
+    } else {
+      res = await api.addBuilding(payload);
+    }
+
+    if (res.code === 200 || res.code === 0) {
+      uni.showToast({
+        title: isEdit.value ? "编辑成功" : "添加成功",
+        icon: "success",
+      });
+
+      // 通知列表页刷新
+      uni.$emit("refreshBuildingList");
+
+      setTimeout(() => {
+        uni.navigateBack();
+      }, 1500);
+    } else {
+      uni.showToast({ title: res.msg || "保存失败", icon: "none" });
+    }
   } catch (e) {
     console.error("保存失败:", e);
-    uni.showToast({ title: "保存失败", icon: "none" });
+    uni.showToast({ title: "网络请求失败", icon: "none" });
+  } finally {
+    uni.hideLoading();
   }
 };
 
@@ -345,7 +443,15 @@ onMounted(() => {
   const building = uni.getStorageSync("editBuilding");
   if (building) {
     isEdit.value = true;
-    formData.value = { ...building };
+    formData.value = {
+      ...building,
+      buildingName: building.buildingName || building.name,
+      buildingHeight: building.buildingHeight || building.height,
+      floors: building.floors || building.floorCount,
+      area: building.area || building.buildingArea,
+      autoFireSystem:
+        building.autoFireSystem || (building.hasFireFacilities ? "1" : "0"),
+    };
     // 清除缓存
     uni.removeStorageSync("editBuilding");
 
@@ -353,6 +459,12 @@ onMounted(() => {
     const idx = buildingTypes.indexOf(building.buildingType);
     if (idx >= 0) {
       typeIndex.value = idx;
+    }
+  } else {
+    // 新增模式：默认使用当前公司的地址
+    const companyAddress = uni.getStorageSync("selectedCompanyAddress");
+    if (companyAddress) {
+      formData.value.address = companyAddress;
     }
   }
 });
@@ -513,6 +625,16 @@ onMounted(() => {
 
 .picker-value.placeholder {
   color: #999;
+}
+
+.form-picker-wrapper {
+  flex: 1;
+}
+
+.form-picker-value {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .picker-arrow {

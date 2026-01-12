@@ -39,6 +39,7 @@
 </template>
 
 <script setup>
+import { getMyCompanyList } from "@/api";
 import { computed, ref, watch } from "vue";
 
 const props = defineProps({
@@ -54,81 +55,17 @@ const searchKeyword = ref("");
 const companyList = ref([]);
 const loading = ref(false);
 
-// 假数据 - 公司列表
-const mockCompanyList = [
-  {
-    id: 1,
-    name: "广发银行股份有限公司阳江分行",
-    address: "阳江市东风三路38号景湖花园综合楼",
-  },
-  {
-    id: 2,
-    name: "华润燃气阳江高新有限公司（港口LNG综合站）",
-    address: "广东省阳江市高新区港口工业园海港二横路南边",
-  },
-  {
-    id: 3,
-    name: "华润燃气阳江高新有限公司（高新区LNG综合站）",
-    address: "广东省阳江市高新区福冈工业园科技四路南边地段",
-  },
-  {
-    id: 4,
-    name: "阳春东风精神病医院",
-    address: "广东省阳春市马水镇东风村委路2号",
-  },
-  {
-    id: 5,
-    name: "阳春惠爱医院/阳春市东风养老院",
-    address: "广东省阳春市马水镇石蒙坪",
-  },
-  {
-    id: 6,
-    name: "阳春市妇幼保健院",
-    address: "广东省阳春市迎宾大道239号",
-  },
-  {
-    id: 7,
-    name: "阳江高新技术产业开发区人民医院",
-    address: "广东省阳江市高新区平冈镇站港公路边北街路口东北面鹧鸪岭",
-  },
-  {
-    id: 8,
-    name: "阳江航空城机场投资控股有限公司",
-    address: "阳江市阳东区合山镇合山机场",
-  },
-  {
-    id: 9,
-    name: "阳江市妇幼保健院",
-    address: "阳江市富康路126号",
-  },
-  {
-    id: 10,
-    name: "阳江市公共卫生医院",
-    address: "阳江市江城区坪郊永康二路12号",
-  },
-  {
-    id: 11,
-    name: "阳江市海陵岛海陵卫生院",
-    address: "阳江市海陵岛海陵镇新华路",
-  },
-  {
-    id: 12,
-    name: "阳江湘钢梅珠钢铁",
-    address: "阳春市潭水镇南山工业区",
-  },
-];
-
 // 根据搜索关键字过滤公司列表
 const filteredCompanyList = computed(() => {
   if (!searchKeyword.value.trim()) {
-    return companyList.value;
+    return companyList.value || [];
   }
   const keyword = searchKeyword.value.trim().toLowerCase();
-  return companyList.value.filter(
-    (item) =>
-      item.name.toLowerCase().includes(keyword) ||
-      item.address.toLowerCase().includes(keyword)
-  );
+  return (companyList.value || []).filter((item) => {
+    const name = (item.name || "").toLowerCase();
+    const address = (item.address || "").toLowerCase();
+    return name.includes(keyword) || address.includes(keyword);
+  });
 });
 
 // 搜索处理
@@ -151,18 +88,18 @@ const closeDrawer = () => {
 const loadCompanyList = async () => {
   loading.value = true;
   try {
-    // TODO: 替换为真实接口
-    // const res = await api.getCompanyList()
-    // if (res.data) {
-    //   companyList.value = res.data
-    // }
-
-    // 使用假数据
-    companyList.value = mockCompanyList;
+    const res = await getMyCompanyList();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      companyList.value = res.data.map((item) => ({
+        companyId: item.companyId,
+        id: item.companyId,
+        name: item.companyName || item.name || "未命名公司",
+        address: item.address || "暂无地址",
+      }));
+    }
   } catch (e) {
     console.error("获取公司列表失败:", e);
-    // 失败时使用假数据
-    companyList.value = mockCompanyList;
+    uni.showToast({ title: "获取公司列表失败", icon: "none" });
   } finally {
     loading.value = false;
   }

@@ -64,8 +64,13 @@ const handleLogout = () => {
   uni.showModal({
     title: "提示",
     content: "确定要退出登录吗？",
-    success: (res) => {
+    success: async (res) => {
       if (res.confirm) {
+        try {
+          await api.logout();
+        } catch (e) {
+          console.error("Logout API failed:", e);
+        }
         removeToken();
         uni.reLaunch({ url: "/pages/login/index" });
       }

@@ -97,16 +97,23 @@ const handleLogin = async () => {
     uni.hideLoading();
 
     // 新接口返回的 token 在 res.data 中
-    if (res.data && res.data.token) {
+    // 兼容 code 为 0 或 200 的情况
+    if ((res.code === 200 || res.code === 0) && res.data && res.data.token) {
       setToken(res.data.token);
+      uni.showToast({ title: "登录成功", icon: "success" });
+      setTimeout(() => {
+        uni.reLaunch({ url: "/pages/index/index" });
+      }, 1500);
+    } else {
+      uni.showToast({ title: res.msg || "登录失败", icon: "none" });
     }
-
-    uni.showToast({ title: "登录成功", icon: "success" });
-    setTimeout(() => {
-      uni.reLaunch({ url: "/pages/index/index" });
-    }, 1500);
   } catch (e) {
     uni.hideLoading();
+    console.error("Login Error:", e);
+    uni.showToast({
+      title: e.msg || e.errMsg || "网络连接错误",
+      icon: "none",
+    });
   }
 };
 </script>

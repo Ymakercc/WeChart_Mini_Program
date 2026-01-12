@@ -128,14 +128,24 @@ const handleRegister = async () => {
       password: password.value, // 密码
     });
 
-    uni.hideLoading();
-    uni.showToast({ title: "注册成功", icon: "success" });
+    if (res.code === 200 || res.code === 0) {
+      uni.hideLoading();
+      uni.showToast({ title: "注册成功", icon: "success" });
 
-    setTimeout(() => {
-      uni.navigateBack();
-    }, 1500);
+      setTimeout(() => {
+        uni.navigateBack();
+      }, 1500);
+    } else {
+      uni.hideLoading();
+      uni.showToast({ title: res.msg || "注册失败", icon: "none" });
+    }
   } catch (e) {
     uni.hideLoading();
+    console.error("Register Error:", e);
+    uni.showToast({
+      title: e.msg || e.errMsg || "注册失败，请检查网络",
+      icon: "none",
+    });
   }
 };
 </script>

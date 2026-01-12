@@ -187,7 +187,11 @@ const appList = ref([
 
 const goPage = (url) => {
   // 已完成的页面可以跳转
-  const enabledPages = ["/pages/building/index"];
+  const enabledPages = [
+    "/pages/building/index",
+    "/pages/checkin/index",
+    "/pages/equipment/index",
+  ];
   if (enabledPages.includes(url)) {
     uni.navigateTo({ url });
   } else {
@@ -201,11 +205,40 @@ const switchProject = () => {
 };
 
 // 处理公司选择
-const handleCompanySelect = (company) => {
-  selectedCompany.value = company;
-  projectName.value = company.name;
-  projectAddr.value = company.address;
-  uni.showToast({ title: "切换成功", icon: "success" });
+const handleCompanySelect = async (company) => {
+  try {
+    uni.showLoading({ title: "获取详情..." });
+    const res = await api.getCompanyDetail(company.companyId);
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      const data = res.data;
+      selectedCompany.value = data;
+      projectName.value = data.companyName || company.name;
+      projectAddr.value = data.address || company.address;
+      // 保存选中的公司ID
+      uni.setStorageSync(
+        "selectedCompanyId",
+        data.companyId || company.companyId
+      );
+      uni.setStorageSync(
+        "selectedCompanyAddress",
+        data.address || company.address || ""
+      );
+      uni.showToast({ title: "选择成功", icon: "success" });
+    } else {
+      // 接口返回错误时使用列表数据作为后备
+      projectName.value = company.name;
+      projectAddr.value = company.address;
+    }
+  } catch (e) {
+    console.error("获取公司详情失败:", e);
+    // 失败时使用列表中的基础数据
+    projectName.value = company.name;
+    projectAddr.value = company.address;
+  } finally {
+    uni.hideLoading();
+    // 如果有其他数据需要刷新，可以在这里调用
+    // loadData();
+  }
 };
 
 const loadData = async () => {

@@ -5,37 +5,37 @@
 
 // 接口基础路径
 // H5 开发环境使用代理（通过 /api 前缀），其他端使用完整地址
-// let BASE_URL = 'http://43.142.75.179:83'  // 正式服务器地址
-let BASE_URL = 'http://127.0.0.1:83'  // 正式服务器地址
+export let BASE_URL = "http://43.142.75.179:83"; // 正式服务器地址
+// let BASE_URL = 'http://127.0.0.1:83'  // 正式服务器地址
 
 // 判断是否为 H5 环境 (浏览器环境)
 // #ifdef H5
-BASE_URL = '/api'
+BASE_URL = "/api";
 // #endif
 
 // Token 存储 key
-const TOKEN_KEY = 'token'
+const TOKEN_KEY = "token";
 
 /**
  * 获取存储的 Token
  */
 export const getToken = () => {
-  return uni.getStorageSync(TOKEN_KEY)
-}
+  return uni.getStorageSync(TOKEN_KEY);
+};
 
 /**
  * 设置 Token
  */
 export const setToken = (token) => {
-  uni.setStorageSync(TOKEN_KEY, token)
-}
+  uni.setStorageSync(TOKEN_KEY, token);
+};
 
 /**
  * 移除 Token
  */
 export const removeToken = () => {
-  uni.removeStorageSync(TOKEN_KEY)
-}
+  uni.removeStorageSync(TOKEN_KEY);
+};
 
 /**
  * 封装的请求方法
@@ -51,85 +51,85 @@ export const request = (options) => {
     // 显示加载中
     if (options.loading !== false) {
       uni.showLoading({
-        title: '加载中...',
-        mask: true
-      })
+        title: "加载中...",
+        mask: true,
+      });
     }
 
     // 获取 Token
-    const token = getToken()
+    const token = getToken();
 
     uni.request({
       url: BASE_URL + options.url,
-      method: options.method || 'GET',
+      method: options.method || "GET",
       data: options.data || {},
       header: {
-        'Content-Type': options.contentType || 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
+        "Content-Type": options.contentType || "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
       },
       success: (res) => {
         // 隐藏加载中
         if (options.loading !== false) {
-          uni.hideLoading()
+          uni.hideLoading();
         }
 
         // 请求成功
         if (res.statusCode === 200) {
-          const data = res.data
-          
+          const data = res.data;
+
           // 业务成功 (RuoYi 返回 code: 0 或 200 表示成功)
           if (data.code === 0 || data.code === 200) {
-            resolve(data)
-          } 
+            resolve(data);
+          }
           // 未登录或 Token 过期
           else if (data.code === 401) {
-            removeToken()
+            removeToken();
             uni.showToast({
-              title: '登录已过期，请重新登录',
-              icon: 'none'
-            })
+              title: "登录已过期，请重新登录",
+              icon: "none",
+            });
             // 跳转到登录页
             setTimeout(() => {
               uni.reLaunch({
-                url: '/pages/login/index'
-              })
-            }, 1500)
-            reject(data)
-          } 
+                url: "/pages/login/index",
+              });
+            }, 1500);
+            reject(data);
+          }
           // 其他业务错误
           else {
             if (options.showError !== false) {
               uni.showToast({
-                title: data.msg || '请求失败',
-                icon: 'none'
-              })
+                title: data.msg || "请求失败",
+                icon: "none",
+              });
             }
-            reject(data)
+            reject(data);
           }
         } else {
           // HTTP 状态码错误
           uni.showToast({
-            title: '网络请求失败',
-            icon: 'none'
-          })
-          reject(res)
+            title: "网络请求失败",
+            icon: "none",
+          });
+          reject(res);
         }
       },
       fail: (err) => {
         // 隐藏加载中
         if (options.loading !== false) {
-          uni.hideLoading()
+          uni.hideLoading();
         }
-        
+
         uni.showToast({
-          title: '网络连接失败',
-          icon: 'none'
-        })
-        reject(err)
-      }
-    })
-  })
-}
+          title: "网络连接失败",
+          icon: "none",
+        });
+        reject(err);
+      },
+    });
+  });
+};
 
 /**
  * GET 请求
@@ -137,11 +137,11 @@ export const request = (options) => {
 export const get = (url, data, options = {}) => {
   return request({
     url,
-    method: 'GET',
+    method: "GET",
     data,
-    ...options
-  })
-}
+    ...options,
+  });
+};
 
 /**
  * POST 请求
@@ -149,11 +149,11 @@ export const get = (url, data, options = {}) => {
 export const post = (url, data, options = {}) => {
   return request({
     url,
-    method: 'POST',
+    method: "POST",
     data,
-    ...options
-  })
-}
+    ...options,
+  });
+};
 
 /**
  * PUT 请求
@@ -161,11 +161,11 @@ export const post = (url, data, options = {}) => {
 export const put = (url, data, options = {}) => {
   return request({
     url,
-    method: 'PUT',
+    method: "PUT",
     data,
-    ...options
-  })
-}
+    ...options,
+  });
+};
 
 /**
  * DELETE 请求
@@ -173,11 +173,11 @@ export const put = (url, data, options = {}) => {
 export const del = (url, data, options = {}) => {
   return request({
     url,
-    method: 'DELETE',
+    method: "DELETE",
     data,
-    ...options
-  })
-}
+    ...options,
+  });
+};
 
 /**
  * 文件上传
@@ -185,50 +185,50 @@ export const del = (url, data, options = {}) => {
 export const upload = (filePath, formData = {}) => {
   return new Promise((resolve, reject) => {
     uni.showLoading({
-      title: '上传中...',
-      mask: true
-    })
+      title: "上传中...",
+      mask: true,
+    });
 
     uni.uploadFile({
-      url: BASE_URL + '/common/upload',
+      url: BASE_URL + "/common/upload",
       filePath: filePath,
-      name: 'file',
+      name: "file",
       formData: formData,
       header: {
-        'Authorization': getToken() ? `Bearer ${getToken()}` : ''
+        Authorization: getToken() ? `Bearer ${getToken()}` : "",
       },
       success: (res) => {
-        uni.hideLoading()
+        uni.hideLoading();
         if (res.statusCode === 200) {
-          const data = JSON.parse(res.data)
+          const data = JSON.parse(res.data);
           if (data.code === 0 || data.code === 200) {
-            resolve(data)
+            resolve(data);
           } else {
             uni.showToast({
-              title: data.msg || '上传失败',
-              icon: 'none'
-            })
-            reject(data)
+              title: data.msg || "上传失败",
+              icon: "none",
+            });
+            reject(data);
           }
         } else {
           uni.showToast({
-            title: '上传失败',
-            icon: 'none'
-          })
-          reject(res)
+            title: "上传失败",
+            icon: "none",
+          });
+          reject(res);
         }
       },
       fail: (err) => {
-        uni.hideLoading()
+        uni.hideLoading();
         uni.showToast({
-          title: '上传失败',
-          icon: 'none'
-        })
-        reject(err)
-      }
-    })
-  })
-}
+          title: "上传失败",
+          icon: "none",
+        });
+        reject(err);
+      },
+    });
+  });
+};
 
 export default {
   request,
@@ -240,5 +240,5 @@ export default {
   getToken,
   setToken,
   removeToken,
-  BASE_URL
-}
+  BASE_URL,
+};

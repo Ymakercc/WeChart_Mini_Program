@@ -3,7 +3,9 @@
  * 基础路径: http://43.142.75.179:83
  */
 
-import { get, post, upload } from '@/utils/request'
+import { BASE_URL, get, post, upload } from "@/utils/request";
+
+export { BASE_URL };
 
 // ==================== 用户认证相关 ====================
 
@@ -11,60 +13,91 @@ import { get, post, upload } from '@/utils/request'
  * 用户登录（小程序专用）
  */
 export const login = (data) => {
-  return post('/api/login', data)
-}
+  return post("/api/login", data);
+};
 
 /**
  * 用户注册
  */
 export const register = (data) => {
-  return post('/api/register', data)
-}
+  return post("/api/register", data);
+};
 
 /**
  * 获取当前用户信息
  */
 export const getUserInfo = () => {
-  return post('/api/userInfo')
-}
+  return get("/api/user/info");
+};
 
 /**
  * 退出登录
  */
 export const logout = () => {
-  return post('/api/logout')
-}
+  return post("/api/logout");
+};
+
+// ==================== 用户菜单 ====================
+
+/**
+ * 获取当前用户菜单权限
+ */
+export const getMenus = () => {
+  return get("/api/user/menus");
+};
 
 // ==================== 消防首页/统计 ====================
 
 /**
  * 获取首页统计数据
  */
-export const getHomeStats = () => {
-  return get('/fire/home')
-}
+export const getHomeStats = (params) => {
+  return get("/fire/home", params);
+};
+
+/**
+ * 获取当前用户负责的公司列表（用于公司切换）
+ */
+export const getMyCompanyList = () => {
+  return get("/api/fire/company/myList");
+};
 
 /**
  * 获取公司列表
  * @param {Object} data - 可选查询参数 { keyword: string }
  */
 export const getCompanyList = (data) => {
-  return post('/fire/company/list', data)
-}
+  return post("/fire/company/list", data);
+};
+
+/**
+ * 切换当前公司
+ * @param {Object} data - { companyId }
+ */
+export const switchCompany = (data) => {
+  return post("/api/fire/company/switch", data);
+};
+
+/**
+ * 获取公司详情
+ */
+export const getCompanyDetail = (companyId) => {
+  return get(`/api/fire/company/detail/${companyId}`);
+};
 
 /**
  * 获取设备状态统计
  */
 export const getEquipmentStats = () => {
-  return get('/fire/stats/equipment')
-}
+  return get("/fire/stats/equipment");
+};
 
 /**
  * 获取建筑统计
  */
 export const getBuildingStats = () => {
-  return get('/fire/stats/building')
-}
+  return get("/fire/stats/building");
+};
 
 // ==================== 消防建筑 ====================
 
@@ -72,32 +105,39 @@ export const getBuildingStats = () => {
  * 获取建筑列表
  */
 export const getBuildingList = (data) => {
-  return post('/fire/building/list', data)
-}
+  return post("/api/fire/building/list", data);
+};
 
 /**
  * 获取建筑详情
  * @param {string|number} id - 建筑ID
  */
 export const getBuildingDetail = (id) => {
-  return get(`/fire/building/detail/${id}`)
-}
+  return get(`/api/fire/building/detail/${id}`);
+};
 
 /**
  * 新增建筑
  * @param {Object} data - 建筑信息
  */
 export const addBuilding = (data) => {
-  return post('/fire/building/add', data)
-}
+  return post("/api/fire/building/add", data);
+};
 
 /**
  * 编辑建筑
  * @param {Object} data - 建筑信息
  */
 export const updateBuilding = (data) => {
-  return post('/fire/building/update', data)
-}
+  return post("/api/fire/building/edit", data);
+};
+
+/**
+ * 根据公司获取建筑列表
+ */
+export const getBuildingsByCompany = (companyId) => {
+  return get(`/api/fire/building/byCompany/${companyId}`);
+};
 
 // ==================== 消防设备 ====================
 
@@ -105,59 +145,153 @@ export const updateBuilding = (data) => {
  * 获取设备列表
  */
 export const getEquipmentList = (data) => {
-  return post('/fire/equipment/list', data)
-}
+  return post("/api/fire/equipment/list", data);
+};
+
+/**
+ * 获取设备详情
+ */
+export const getEquipmentDetail = (id) => {
+  return get(`/api/fire/equipment/detail/${id}`);
+};
+
+/**
+ * 新增设备
+ */
+export const addEquipment = (data) => {
+  return post("/api/fire/equipment/add", data);
+};
+
+/**
+ * 编辑设备
+ */
+export const editEquipment = (data) => {
+  return post("/api/fire/equipment/edit", data);
+};
+
+/**
+ * 扫码获取设备
+ */
+export const scanEquipment = (code) => {
+  return get(`/api/fire/equipment/scan/${code}`);
+};
+
+/**
+ * 报修/故障上报
+ */
+export const reportFault = (data) => {
+  return post("/api/fire/equipment/reportFault", data);
+};
 
 // ==================== 维保任务 ====================
 
 /**
- * 获取任务列表
+ * 获取我的任务列表
  */
-export const getTaskList = (data) => {
-  return post('/fire/task/list', data)
-}
+export const getMyTaskList = (data) => {
+  return post("/api/fire/task/myList", data);
+};
 
 /**
  * 获取任务详情
  */
 export const getTaskDetail = (taskId) => {
-  return get(`/fire/task/detail/${taskId}`)
-}
+  return get(`/api/fire/task/detail/${taskId}`);
+};
 
 /**
- * 获取系统列表
+ * 获取任务的系统列表
  */
 export const getSystemsByTaskId = (taskId) => {
-  return post(`/fire/task/systems/${taskId}`)
-}
+  return get(`/api/fire/task/${taskId}/systems`);
+};
 
 /**
- * 获取设备列表（任务下的）
+ * 获取系统下的设备列表
  */
 export const getDevicesBySystemId = (systemId) => {
-  return post(`/fire/task/devices/${systemId}`)
-}
+  return get(`/api/fire/task/system/${systemId}/devices`);
+};
 
 /**
- * 获取检查项列表
+ * 获取设备下的检查项列表
  */
 export const getItemsByDeviceId = (deviceId) => {
-  return post(`/fire/task/items/${deviceId}`)
-}
+  return get(`/api/fire/task/device/${deviceId}/items`);
+};
 
 /**
- * 保存检查结果
+ * 提交检查结果
  */
-export const saveCheckResult = (data) => {
-  return post('/fire/task/saveCheckResult', data)
-}
+export const submitCheckResult = (data) => {
+  return post("/api/fire/task/item/check", data);
+};
 
 /**
- * 批量保存检查结果
+ * 批量提交检查结果
  */
-export const batchSaveCheckResult = (data) => {
-  return post('/fire/task/batchSaveCheckResult', data)
-}
+export const batchSubmitCheckResults = (data) => {
+  return post("/api/fire/task/item/batchCheck", data);
+};
+
+/**
+ * 完成任务
+ */
+export const completeTask = (data) => {
+  return post("/api/fire/task/complete", data);
+};
+
+/**
+ * 获取任务统计
+ * @param {Object} params - { companyId, month }
+ */
+export const getTaskStatistics = (params) => {
+  return get("/api/fire/task/statistics", params);
+};
+
+// ==================== 维保测试（巡检管理） =================---
+
+/**
+ * 获取巡检登记列表
+ */
+export const getInspectionList = (data) => {
+  return post("/api/fire/inspection/list", data);
+};
+
+/**
+ * 获取我的巡检列表
+ */
+export const getMyInspectionList = (data) => {
+  return post("/api/fire/inspection/myList", data);
+};
+
+/**
+ * 获取巡检详情
+ */
+export const getInspectionDetail = (id) => {
+  return get(`/api/fire/inspection/detail/${id}`);
+};
+
+/**
+ * 新增巡检登记
+ */
+export const addInspection = (data) => {
+  return post("/api/fire/inspection/add", data);
+};
+
+/**
+ * 修改巡检登记
+ */
+export const editInspection = (data) => {
+  return post("/api/fire/inspection/edit", data);
+};
+
+/**
+ * 删除巡检登记
+ */
+export const deleteInspection = (id) => {
+  return post(`/api/fire/inspection/delete/${id}`);
+};
 
 // ==================== 签到相关 ====================
 
@@ -165,8 +299,29 @@ export const batchSaveCheckResult = (data) => {
  * 获取签到列表
  */
 export const getCheckInList = (data) => {
-  return post('/fire/checkIn/list', data)
-}
+  return post("/api/fire/checkIn/list", data);
+};
+
+/**
+ * 新增签到
+ */
+export const addCheckIn = (data) => {
+  return post("/api/fire/checkIn/add", data);
+};
+
+/**
+ * 获取签到详情
+ */
+export const getCheckInDetail = (id) => {
+  return get(`/api/fire/checkIn/detail/${id}`);
+};
+
+/**
+ * 校验打卡范围
+ */
+export const validateLocation = (data) => {
+  return post("/api/fire/checkIn/validateLocation", data);
+};
 
 // ==================== 文件上传 ====================
 
@@ -174,8 +329,47 @@ export const getCheckInList = (data) => {
  * 上传文件
  */
 export const uploadFile = (filePath, formData) => {
-  return upload(filePath, formData)
-}
+  return upload(filePath, formData);
+};
+
+// ==================== 维保报告 ====================
+
+/**
+ * 获取报告列表
+ */
+export const getReportList = (data) => {
+  return post("/api/fire/report/list", data);
+};
+
+/**
+ * 获取报告详情
+ */
+export const getReportDetail = (id) => {
+  return get(`/api/fire/report/detail/${id}`);
+};
+
+/**
+ * 下载报告URL
+ */
+export const getReportDownloadUrl = (id) => {
+  return `/api/fire/report/download/${id}`;
+};
+
+// ==================== 字典数据 ====================
+
+/**
+ * 获取系统类型
+ */
+export const getSystemTypes = () => {
+  return get("/api/fire/dict/systemTypes");
+};
+
+/**
+ * 获取维保类型
+ */
+export const getInspectionTypes = () => {
+  return get("/api/fire/dict/inspectionTypes");
+};
 
 export default {
   // 认证
@@ -183,28 +377,57 @@ export default {
   register,
   getUserInfo,
   logout,
+  getMenus,
   // 首页
   getHomeStats,
   getCompanyList,
+  getMyCompanyList,
+  switchCompany,
+  getCompanyDetail,
   getEquipmentStats,
   getBuildingStats,
   // 建筑
   getBuildingList,
   getBuildingDetail,
+  getBuildingsByCompany,
   addBuilding,
   updateBuilding,
   // 设备
   getEquipmentList,
+  getEquipmentDetail,
+  addEquipment,
+  editEquipment,
+  scanEquipment,
+  reportFault,
   // 任务
-  getTaskList,
+  getMyTaskList,
   getTaskDetail,
   getSystemsByTaskId,
   getDevicesBySystemId,
   getItemsByDeviceId,
-  saveCheckResult,
-  batchSaveCheckResult,
+  submitCheckResult,
+  batchSubmitCheckResults,
+  completeTask,
+  getTaskStatistics,
+  // 巡检
+  getInspectionList,
+  getMyInspectionList,
+  getInspectionDetail,
+  addInspection,
+  editInspection,
+  deleteInspection,
   // 签到
   getCheckInList,
+  addCheckIn,
+  getCheckInDetail,
+  validateLocation,
+  // 报告
+  getReportList,
+  getReportDetail,
+  getReportDownloadUrl,
+  // 字典
+  getSystemTypes,
+  getInspectionTypes,
   // 文件
-  uploadFile
-}
+  uploadFile,
+};

@@ -115,32 +115,28 @@ const handleLogin = async () => {
   uni.showLoading({ title: "登录中...", mask: true });
 
   try {
-    // TODO: 调用手机号登录接口
-    // const res = await api.phoneLogin({ phone: phone.value, code: code.value })
+    // 调用登录接口 (即使是手机号登录，如果文档只有这一个，暂时也指向这个接口)
+    const res = await api.login({
+      username: phone.value,
+      password: code.value, // 将验证码作为密码尝试，或提示用户使用密码登录
+    });
 
-    // 模拟登录成功
-    setTimeout(() => {
-      uni.hideLoading();
+    uni.hideLoading();
 
-      // 保存 Token
-      setToken("mock_token_xxx");
-
-      uni.showToast({
-        title: "登录成功",
-        icon: "success",
-      });
-
-      // 跳转到首页
+    if ((res.code === 200 || res.code === 0) && res.data && res.data.token) {
+      setToken(res.data.token);
+      uni.showToast({ title: "登录成功", icon: "success" });
       setTimeout(() => {
-        uni.reLaunch({
-          url: "/pages/index/index",
-        });
+        uni.reLaunch({ url: "/pages/index/index" });
       }, 1500);
-    }, 1000);
+    } else {
+      uni.showToast({ title: res.msg || "登录失败", icon: "none" });
+    }
   } catch (e) {
     uni.hideLoading();
+    console.error("Phone Login Error:", e);
     uni.showToast({
-      title: e.msg || "登录失败",
+      title: e.msg || e.errMsg || "网络连接错误",
       icon: "none",
     });
   }

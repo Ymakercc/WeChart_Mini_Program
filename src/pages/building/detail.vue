@@ -5,7 +5,7 @@
       <view class="nav-back" @tap="goBack">
         <text class="back-icon">‹</text>
       </view>
-      <text class="nav-title">建筑信息</text>
+      <text class="nav-title">{{ isEditing ? "编辑建筑" : "建筑信息" }}</text>
       <view class="nav-placeholder"></view>
     </view>
 
@@ -15,105 +15,218 @@
       <scroll-view class="content-item" scroll-y>
         <!-- 白色卡片容器 -->
         <view class="card-wrapper">
+          <!-- 建筑编号 -->
+          <view class="detail-item">
+            <text class="detail-label">建筑编号</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              v-model="buildingData.buildingCode"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.buildingCode
+            }}</text>
+          </view>
+
           <!-- 建筑名称 -->
           <view class="detail-item">
             <text class="detail-label">建筑名称</text>
-            <text class="detail-value">{{ buildingData.name }}</text>
-          </view>
-
-          <!-- 自动消防设施 -->
-          <view class="detail-item">
-            <text class="detail-label">自动消防设施</text>
-            <text class="detail-value">{{
-              buildingData.hasFireFacilities ? "有" : "无"
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              v-model="buildingData.buildingName"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.buildingName
             }}</text>
           </view>
 
           <!-- 建筑地址 -->
           <view class="detail-item">
             <text class="detail-label">建筑地址</text>
-            <text class="detail-value">{{ buildingData.address }}</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              v-model="buildingData.address"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{ buildingData.address }}</text>
           </view>
 
           <!-- 建筑类别 -->
           <view class="detail-item">
             <text class="detail-label">建筑类别</text>
-            <text class="detail-value">{{ buildingData.buildingType }}</text>
-          </view>
-
-          <!-- 占地面积 -->
-          <view class="detail-item">
-            <text class="detail-label">占地面积(m²)</text>
-            <text class="detail-value">{{ buildingData.landArea }}</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              v-model="buildingData.buildingType"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.buildingType
+            }}</text>
           </view>
 
           <!-- 建筑面积 -->
           <view class="detail-item">
             <text class="detail-label">建筑面积(m²)</text>
-            <text class="detail-value">{{ buildingData.buildingArea }}</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              type="digit"
+              v-model="buildingData.area"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{ buildingData.area }}</text>
           </view>
 
           <!-- 建筑高度 -->
           <view class="detail-item">
             <text class="detail-label">建筑高度(m)</text>
-            <text class="detail-value">{{ buildingData.height }}</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              type="digit"
+              v-model="buildingData.buildingHeight"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.buildingHeight
+            }}</text>
           </view>
 
           <!-- 建筑层数 -->
           <view class="detail-item">
             <text class="detail-label">建筑层数</text>
-            <text class="detail-value">{{ buildingData.totalFloors }}</text>
-          </view>
-
-          <!-- 地上层数 -->
-          <view class="detail-item">
-            <text class="detail-label">地上层数</text>
-            <text class="detail-value">{{
-              buildingData.aboveGroundFloors
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              type="number"
+              v-model="buildingData.floors"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.floors || buildingData.floorCount
             }}</text>
           </view>
 
           <!-- 地下层数 -->
           <view class="detail-item">
             <text class="detail-label">地下层数</text>
-            <text class="detail-value">{{
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              type="number"
+              v-model="buildingData.undergroundFloors"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
               buildingData.undergroundFloors
+            }}</text>
+          </view>
+
+          <!-- 结构类型 -->
+          <view class="detail-item">
+            <text class="detail-label">结构类型</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              v-model="buildingData.structureType"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.structureType
+            }}</text>
+          </view>
+
+          <!-- 耐火等级 -->
+          <view class="detail-item">
+            <text class="detail-label">耐火等级</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              v-model="buildingData.fireResistanceLevel"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.fireResistanceLevel
+            }}</text>
+          </view>
+
+          <!-- 防火分区数 -->
+          <view class="detail-item">
+            <text class="detail-label">防火分区数</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              type="number"
+              v-model="buildingData.fireZoneCount"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.fireZoneCount
             }}</text>
           </view>
 
           <!-- 安全出口 -->
           <view class="detail-item">
             <text class="detail-label">安全出口(个)</text>
-            <text class="detail-value">{{ buildingData.safetyExits }}</text>
-          </view>
-
-          <!-- 疏散楼梯数 -->
-          <view class="detail-item">
-            <text class="detail-label">疏散楼梯数(个)</text>
-            <text class="detail-value">{{
-              buildingData.evacuationStairs
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              type="number"
+              v-model="buildingData.evacuationExitCount"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.evacuationExitCount ||
+              buildingData.emergencyExits ||
+              buildingData.safetyExits
             }}</text>
           </view>
 
-          <!-- 消防电梯数 -->
+          <!-- 竣工日期 -->
           <view class="detail-item">
-            <text class="detail-label">消防电梯数(个)</text>
-            <text class="detail-value">{{ buildingData.fireElevators }}</text>
+            <text class="detail-label">竣工日期</text>
+            <picker
+              v-if="isEditing"
+              mode="date"
+              class="detail-picker"
+              @change="(e) => (buildingData.completionDate = e.detail.value)"
+            >
+              <text class="detail-input picker-text">{{
+                buildingData.completionDate || "请选择"
+              }}</text>
+            </picker>
+            <text v-else class="detail-value">{{
+              buildingData.completionDate
+            }}</text>
           </view>
 
-          <!-- 避难层位置 -->
+          <!-- 备注 -->
           <view class="detail-item last">
-            <text class="detail-label">避难层位置</text>
-            <text class="detail-value">{{
-              buildingData.refugeFloor || "-"
+            <text class="detail-label">备注</text>
+            <input
+              v-if="isEditing"
+              class="detail-input"
+              v-model="buildingData.remark"
+              placeholder="请输入"
+            />
+            <text v-else class="detail-value">{{
+              buildingData.remark || "-"
             }}</text>
           </view>
         </view>
       </scroll-view>
 
-      <!-- 编辑按钮 -->
+      <!-- 底部按钮 -->
       <view class="footer">
-        <view class="edit-btn" @tap="goEdit">
+        <view v-if="isEditing" class="edit-btn" @tap="handleSave">
+          <text class="edit-text">保存</text>
+        </view>
+        <view v-else class="edit-btn" @tap="toggleEdit">
           <text class="edit-text">编辑</text>
         </view>
       </view>
@@ -122,56 +235,115 @@
 </template>
 
 <script setup>
+import api from "@/api/index";
 import { onMounted, ref } from "vue";
 
+const isEditing = ref(false);
+
 const buildingData = ref({
-  id: null,
-  name: "",
-  hasFireFacilities: false,
+  buildingId: null,
+  buildingCode: "",
+  buildingName: "",
   address: "",
   buildingType: "",
-  landArea: "",
-  buildingArea: "",
-  height: "",
-  totalFloors: "",
-  aboveGroundFloors: "",
+  area: "",
+  buildingHeight: "",
+  floors: "",
+  floorCount: "",
   undergroundFloors: "",
+  structureType: "",
+  fireResistanceLevel: "",
+  fireZoneCount: "",
+  evacuationExitCount: "",
+  emergencyExits: "",
   safetyExits: "",
-  evacuationStairs: "",
-  fireElevators: "",
-  refugeFloor: "",
+  completionDate: "",
+  remark: "",
+  companyId: null,
 });
 
 // 返回上一页
 const goBack = () => {
-  uni.navigateBack();
+  if (isEditing.value) {
+    // 如果在编辑模式，先退出编辑
+    isEditing.value = false;
+  } else {
+    uni.navigateBack();
+  }
 };
 
-// 跳转到编辑页面
-const goEdit = () => {
-  // 将建筑信息存入缓存用于编辑
-  uni.setStorageSync("editBuilding", buildingData.value);
-  uni.navigateTo({
-    url: "/pages/building/form",
-  });
+// 切换编辑模式
+const toggleEdit = () => {
+  isEditing.value = true;
+};
+
+// 保存编辑
+const handleSave = async () => {
+  try {
+    uni.showLoading({ title: "正在保存..." });
+
+    // 构造提交数据
+    const payload = {
+      ...buildingData.value,
+      buildingId: buildingData.value.buildingId,
+      companyId:
+        buildingData.value.companyId || uni.getStorageSync("selectedCompanyId"),
+      floors: Number(
+        buildingData.value.floors || buildingData.value.floorCount || 0
+      ),
+      undergroundFloors: Number(buildingData.value.undergroundFloors || 0),
+      area: Number(buildingData.value.area || 0),
+      buildingHeight: Number(buildingData.value.buildingHeight || 0),
+      fireZoneCount: Number(buildingData.value.fireZoneCount || 0),
+      evacuationExitCount: Number(buildingData.value.evacuationExitCount || 0),
+    };
+
+    const res = await api.updateBuilding(payload);
+
+    if (res.code === 200 || res.code === 0) {
+      uni.showToast({ title: "保存成功", icon: "success" });
+      // 通知列表页刷新
+      uni.$emit("refreshBuildingList");
+      setTimeout(() => {
+        uni.navigateBack();
+      }, 1500);
+    } else {
+      uni.showToast({ title: res.msg || "保存失败", icon: "none" });
+    }
+  } catch (e) {
+    console.error("保存失败:", e);
+    uni.showToast({ title: "网络请求失败", icon: "none" });
+  } finally {
+    uni.hideLoading();
+  }
 };
 
 // 加载建筑详情
 const loadBuildingDetail = async (id) => {
   try {
-    // TODO: 替换为真实接口
-    // const res = await api.getBuildingDetail(id);
-    // if (res.data) {
-    //   buildingData.value = res.data;
-    // }
-
-    // 从缓存读取数据
-    const building = uni.getStorageSync("currentBuilding");
-    if (building) {
-      buildingData.value = building;
+    uni.showLoading({ title: "获取详情..." });
+    const res = await api.getBuildingDetail(id);
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      buildingData.value = res.data;
+    } else {
+      // 接口失败，尝试从缓存读取
+      const building = uni.getStorageSync("currentBuilding");
+      if (building && (building.buildingId == id || building.id == id)) {
+        buildingData.value = building;
+      } else {
+        uni.showToast({ title: "获取详情失败", icon: "none" });
+      }
     }
   } catch (e) {
     console.error("获取建筑详情失败:", e);
+    const building = uni.getStorageSync("currentBuilding");
+    if (building) {
+      buildingData.value = building;
+    } else {
+      uni.showToast({ title: "获取详情出错", icon: "none" });
+    }
+  } finally {
+    uni.hideLoading();
   }
 };
 
@@ -244,7 +416,7 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* 详情内容区域 - 对应蓝色盒子 */
+/* 详情内容区域 */
 .content-item {
   flex: 1;
   background: #fff;
@@ -283,7 +455,27 @@ onMounted(() => {
   line-height: 1.5;
 }
 
-/* 底部编辑 */
+.detail-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  text-align: right;
+  border-bottom: 1rpx solid #e53935;
+  padding-bottom: 8rpx;
+}
+
+.detail-picker {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.picker-text {
+  border-bottom: 1rpx solid #e53935;
+  padding-bottom: 8rpx;
+}
+
+/* 底部按钮 */
 .footer {
   height: 10%;
   display: flex;
