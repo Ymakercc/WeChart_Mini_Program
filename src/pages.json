@@ -117,6 +117,27 @@
         "navigationStyle": "custom",
         "navigationBarTitleText": "设备详情"
       }
+    },
+    {
+      "path": "pages/inspection/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "巡检管理"
+      }
+    },
+    {
+      "path": "pages/inspection/form",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "巡检登记"
+      }
+    },
+    {
+      "path": "pages/inspection/detail",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "巡检详情"
+      }
     }
   ],
   "globalStyle": {

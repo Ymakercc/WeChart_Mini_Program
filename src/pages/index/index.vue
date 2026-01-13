@@ -163,7 +163,7 @@ const appList = ref([
     name: "巡查测试",
     icon: "/static/appIcon/test.png",
     color: "#43a047",
-    url: "/pages/inspect/index",
+    url: "/pages/inspection/index",
   },
   {
     name: "设备信息",
@@ -191,6 +191,7 @@ const goPage = (url) => {
     "/pages/building/index",
     "/pages/checkin/index",
     "/pages/equipment/index",
+    "/pages/inspection/index",
   ];
   if (enabledPages.includes(url)) {
     uni.navigateTo({ url });
@@ -214,10 +215,14 @@ const handleCompanySelect = async (company) => {
       selectedCompany.value = data;
       projectName.value = data.companyName || company.name;
       projectAddr.value = data.address || company.address;
-      // 保存选中的公司ID
+      // 保存选中的公司信息
       uni.setStorageSync(
         "selectedCompanyId",
         data.companyId || company.companyId
+      );
+      uni.setStorageSync(
+        "selectedCompanyName",
+        data.companyName || company.name || ""
       );
       uni.setStorageSync(
         "selectedCompanyAddress",
