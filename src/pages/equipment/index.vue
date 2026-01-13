@@ -10,54 +10,36 @@
       background-color="#e53935"
       color="#ffffff"
       @clickLeft="goBack"
-    />
-
-    <!-- 内容区域/卡片列表容器 -->
-    <scroll-view class="content" scroll-y>
-      <view
-        class="equipment-card"
-        v-for="item in equipmentList"
-        :key="item.equipmentId"
-        @tap="goDetail(item)"
-      >
-        <view class="card-header">
-          <text class="equipment-name">{{ item.equipmentName }}</text>
-          <text class="equipment-status" :class="getStatusClass(item.status)">{{
-            item.statusName || getStatusText(item.status)
-          }}</text>
+    >
+      <!-- <template #right>
+        <view class="nav-right" @tap="goAdd">
+          <uni-icons type="plusempty" size="24" color="#ffffff" />
         </view>
-        <view class="card-content">
-          <view class="info-row">
-            <view class="info-item">
-              <text class="info-label">设备编号</text>
-              <text class="info-value">{{ item.equipmentCode }}</text>
-            </view>
-            <view class="info-item">
-              <text class="info-label">设备类型</text>
-              <text class="info-value">{{ item.equipmentType }}</text>
-            </view>
-          </view>
-          <view class="info-row">
-            <view class="info-item">
-              <text class="info-label">所在建筑</text>
-              <text class="info-value">{{ item.buildingName }}</text>
-            </view>
-            <view class="info-item">
-              <text class="info-label">楼层</text>
-              <text class="info-value">{{ item.floor }}</text>
-            </view>
-          </view>
-          <view class="info-row">
-            <view class="info-item full">
-              <text class="info-label">位置</text>
-              <text class="info-value">{{ item.location }}</text>
-            </view>
+      </template> -->
+    </uni-nav-bar>
+
+    <!-- 内容区域/分组列表 -->
+    <scroll-view class="content" scroll-y>
+      <view class="type-list">
+        <view
+          class="type-item"
+          v-for="group in groupedEquipment"
+          :key="group.type"
+          @tap="goTypeList(group)"
+        >
+          <text class="type-name">{{ group.typeName || group.type }}</text>
+          <view class="type-right">
+            <text class="type-count">{{ group.count }}</text>
+            <text class="arrow">›</text>
           </view>
         </view>
       </view>
 
       <!-- 空状态 -->
-      <view class="empty-state" v-if="equipmentList.length === 0">
+      <view
+        class="empty-state"
+        v-if="groupedEquipment.length === 0 && !loading"
+      >
         <text class="empty-text">暂无数据</text>
       </view>
     </scroll-view>
@@ -71,9 +53,33 @@
 
 <script setup>
 import api from "@/api/index";
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 const equipmentList = ref([]);
+const loading = ref(false);
+
+// 按设备类型分组
+const groupedEquipment = computed(() => {
+  const groups = {};
+
+  equipmentList.value.forEach((item) => {
+    const type = item.equipmentType || item.systemType || "其他";
+    const typeName = item.equipmentTypeName || item.systemTypeName || type;
+
+    if (!groups[type]) {
+      groups[type] = {
+        type: type,
+        typeName: typeName,
+        count: 0,
+        items: [],
+      };
+    }
+    groups[type].count++;
+    groups[type].items.push(item);
+  });
+
+  return Object.values(groups).sort((a, b) => b.count - a.count);
+});
 
 // 返回上一页
 const goBack = () => {
@@ -87,45 +93,21 @@ const goAdd = () => {
   });
 };
 
-// 跳转到详情页面
-const goDetail = (item) => {
-  uni.setStorageSync("currentEquipment", item);
+// 跳转到某类型的设备列表
+const goTypeList = (group) => {
+  // 存储该类型的设备列表
+  uni.setStorageSync("currentTypeEquipments", group.items);
   uni.navigateTo({
-    url: `/pages/equipment/detail?id=${item.equipmentId}`,
+    url: `/pages/equipment/list?type=${encodeURIComponent(
+      group.type
+    )}&typeName=${encodeURIComponent(group.typeName)}`,
   });
-};
-
-// 获取状态样式类
-const getStatusClass = (status) => {
-  switch (status) {
-    case "0":
-      return "status-normal";
-    case "1":
-      return "status-warning";
-    case "2":
-      return "status-error";
-    default:
-      return "status-normal";
-  }
-};
-
-// 获取状态文本
-const getStatusText = (status) => {
-  switch (status) {
-    case "0":
-      return "正常";
-    case "1":
-      return "待维护";
-    case "2":
-      return "故障";
-    default:
-      return "正常";
-  }
 };
 
 // 加载设备列表
 const loadEquipmentList = async () => {
   try {
+    loading.value = true;
     const companyId = uni.getStorageSync("selectedCompanyId");
     if (!companyId) {
       uni.showToast({ title: "请先选择公司", icon: "none" });
@@ -138,7 +120,7 @@ const loadEquipmentList = async () => {
       equipmentType: "",
       status: "",
       pageNum: 1,
-      pageSize: 50,
+      pageSize: 500,
     });
 
     if (res.code === 200 || res.code === 0) {
@@ -153,6 +135,8 @@ const loadEquipmentList = async () => {
     console.error("获取设备列表失败:", e);
     uni.showToast({ title: "获取设备列表失败", icon: "none" });
     equipmentList.value = [];
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -175,94 +159,66 @@ onUnmounted(() => {
 .page {
   width: 100vw;
   height: 100vh;
-  background-color: #fff;
+  background-color: #f5f5f5;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* 内容区域/卡片列表容器 */
+.nav-right {
+  padding: 0 20rpx;
+}
+
+/* 内容区域 */
 .content {
+  padding-right: 20rpx;
+  padding-left: 20rpx;
   flex: 1;
-  padding: 20rpx;
-  padding-top: calc(16px + env(safe-area-inset-top) + 20rpx);
-  background: #f5f5f5;
+  padding-top: calc(16px + env(safe-area-inset-top));
   box-sizing: border-box;
 }
 
-.equipment-card {
+/* 类型列表 */
+.type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  padding-top: 20rpx;
+}
+
+.type-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 30rpx;
   background: #fff;
   border-radius: 12rpx;
-  margin-bottom: 20rpx;
-  overflow: hidden;
   box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
-.card-header {
-  background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
-  padding: 20rpx 30rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.type-item:active {
+  background: #f5f5f5;
 }
 
-.equipment-name {
+.type-name {
   font-size: 30rpx;
-  font-weight: bold;
-  color: #fff;
-}
-
-.equipment-status {
-  font-size: 24rpx;
-  padding: 4rpx 16rpx;
-  border-radius: 20rpx;
-  color: #fff;
-}
-
-.status-normal {
-  background: rgba(76, 175, 80, 0.9);
-}
-
-.status-warning {
-  background: rgba(255, 152, 0, 0.9);
-}
-
-.status-error {
-  background: rgba(244, 67, 54, 0.9);
-}
-
-.card-content {
-  padding: 20rpx 30rpx;
-}
-
-.info-row {
-  display: flex;
-  margin-bottom: 16rpx;
-}
-
-.info-row:last-child {
-  margin-bottom: 0;
-}
-
-.info-item {
-  flex: 1;
-  display: flex;
-}
-
-.info-item.full {
-  flex: none;
-  width: 100%;
-}
-
-.info-label {
-  font-size: 26rpx;
-  color: #666;
-  margin-right: 10rpx;
-}
-
-.info-value {
-  font-size: 26rpx;
   color: #333;
+}
+
+.type-right {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.type-count {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #ccc;
 }
 
 /* 空状态 */
@@ -285,12 +241,12 @@ onUnmounted(() => {
   bottom: 60rpx;
   width: 100rpx;
   height: 100rpx;
-  background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(229, 57, 53, 0.4);
+  box-shadow: 0 8rpx 24rpx rgba(25, 118, 210, 0.4);
   z-index: 100;
 }
 

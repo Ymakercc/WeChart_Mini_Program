@@ -119,6 +119,20 @@
       }
     },
     {
+      "path": "pages/equipment/list",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "设备列表"
+      }
+    },
+    {
+      "path": "pages/equipment/edit",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "编辑设备"
+      }
+    },
+    {
       "path": "pages/inspection/index",
       "style": {
         "navigationStyle": "custom",

@@ -1,174 +1,86 @@
 <template>
   <view class="page">
-    <!-- 顶部导航 -->
-    <view class="nav-header">
-      <view class="nav-back" @tap="goBack">
-        <text class="back-icon">‹</text>
-      </view>
-      <text class="nav-title">设备详情</text>
-      <view class="nav-edit" @tap="goEdit">
-        <text class="edit-text">编辑</text>
-      </view>
-    </view>
+    <!-- 导航栏 -->
+    <uni-nav-bar
+      fixed
+      status-bar
+      left-icon="back"
+      title="设备信息"
+      background-color="#e53935"
+      color="#ffffff"
+      @clickLeft="goBack"
+    />
 
-    <!-- 详情内容 - 使用表单样式 -->
-    <scroll-view class="form-content" scroll-y>
-      <!-- 设备编号 -->
-      <view class="form-item">
-        <text class="form-label">设备编号</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.equipmentCode || "-" }}</text>
+    <!-- 内容区域 -->
+    <scroll-view class="content" scroll-y>
+      <view class="form-card">
+        <!-- 所在建筑 -->
+        <view class="form-item">
+          <text class="form-label">所在建筑</text>
+          <text class="form-value">{{ formData.buildingName || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 设备名称 -->
-      <view class="form-item">
-        <text class="form-label">设备名称</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.equipmentName || "-" }}</text>
+        <!-- 所在楼层 -->
+        <view class="form-item">
+          <text class="form-label">所在楼层</text>
+          <text class="form-value">{{ formData.floor || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 设备类型 -->
-      <view class="form-item">
-        <text class="form-label">设备类型</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.equipmentType || "-" }}</text>
+        <!-- 系统名称 -->
+        <view class="form-item">
+          <text class="form-label">系统名称</text>
+          <text class="form-value">{{ formData.equipmentType || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 品牌 -->
-      <view class="form-item">
-        <text class="form-label">品牌</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.brand || "-" }}</text>
+        <!-- 设备名称 -->
+        <view class="form-item">
+          <text class="form-label">设备名称</text>
+          <text class="form-value">{{ formData.equipmentName || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 型号 -->
-      <view class="form-item">
-        <text class="form-label">型号</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.model || "-" }}</text>
+        <!-- 生产厂家 -->
+        <view class="form-item">
+          <text class="form-label">生产厂家</text>
+          <text class="form-value">{{ formData.manufacturer || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 规格 -->
-      <view class="form-item">
-        <text class="form-label">规格</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.specifications || "-" }}</text>
+        <!-- 有效日期 -->
+        <view class="form-item">
+          <text class="form-label">有效日期</text>
+          <text class="form-value">{{ formData.expiryDate || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 状态 -->
-      <view class="form-item">
-        <text class="form-label">状态</text>
-        <view class="form-value-wrapper">
-          <text
-            class="form-value status"
-            :class="getStatusClass(detail.status)"
-          >
-            {{ detail.statusName || getStatusText(detail.status) }}
-          </text>
+        <!-- 设备数量 -->
+        <view class="form-item">
+          <text class="form-label">设备数量</text>
+          <text class="form-value">{{ formData.quantity || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 分隔线 -->
-      <view class="section-divider"></view>
-
-      <!-- 所属公司 -->
-      <view class="form-item">
-        <text class="form-label">所属公司</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.companyName || "-" }}</text>
+        <!-- 具体位置 -->
+        <view class="form-item">
+          <text class="form-label">具体位置</text>
+          <text class="form-value">{{ formData.location || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 所在建筑 -->
-      <view class="form-item">
-        <text class="form-label">所在建筑</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.buildingName || "-" }}</text>
+        <!-- 规格型号 -->
+        <view class="form-item">
+          <text class="form-label">规格型号</text>
+          <text class="form-value">{{ formData.specification || "-" }}</text>
         </view>
-      </view>
 
-      <!-- 楼层 -->
-      <view class="form-item">
-        <text class="form-label">楼层</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.floor || "-" }}</text>
-        </view>
-      </view>
-
-      <!-- 具体位置 -->
-      <view class="form-item">
-        <text class="form-label">具体位置</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.location || "-" }}</text>
-        </view>
-      </view>
-
-      <!-- 分隔线 -->
-      <view class="section-divider"></view>
-
-      <!-- 安装日期 -->
-      <view class="form-item">
-        <text class="form-label">安装日期</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.installDate || "-" }}</text>
-        </view>
-      </view>
-
-      <!-- 生产日期 -->
-      <view class="form-item">
-        <text class="form-label">生产日期</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.productionDate || "-" }}</text>
-        </view>
-      </view>
-
-      <!-- 保修截止 -->
-      <view class="form-item">
-        <text class="form-label">保修截止</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.warrantyEndDate || "-" }}</text>
-        </view>
-      </view>
-
-      <!-- 上次维保 -->
-      <view class="form-item">
-        <text class="form-label">上次维保</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{
-            detail.lastMaintenanceDate || "-"
+        <!-- 设备标识 -->
+        <view class="form-item last">
+          <text class="form-label">设备标识</text>
+          <text class="form-value ellipsis">{{
+            formData.equipmentCode || "-"
           }}</text>
         </view>
       </view>
 
-      <!-- 下次维保 -->
-      <view class="form-item">
-        <text class="form-label">下次维保</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{
-            detail.nextMaintenanceDate || "-"
-          }}</text>
-        </view>
-      </view>
-
-      <!-- 备注 -->
-      <view class="form-item" v-if="detail.remark">
-        <text class="form-label">备注</text>
-        <view class="form-value-wrapper">
-          <text class="form-value">{{ detail.remark }}</text>
-        </view>
-      </view>
-
-      <!-- 设备图片 -->
-      <view class="form-item image-section" v-if="detail.qrCode">
-        <text class="form-label">设备二维码</text>
-        <view class="image-wrapper">
-          <image :src="detail.qrCode" mode="aspectFit" class="qr-image"></image>
+      <!-- 前往巡查按钮 -->
+      <view class="btn-container">
+        <view class="action-btn" @tap="goEdit">
+          <text>前往巡查</text>
         </view>
       </view>
     </scroll-view>
@@ -179,217 +91,197 @@
 import api from "@/api/index";
 import { onMounted, ref } from "vue";
 
-const detail = ref({});
+const equipmentId = ref(null);
+const loading = ref(false);
 
-// 返回上一页
+const formData = ref({
+  equipmentId: null,
+  companyId: null,
+  buildingId: null,
+  buildingName: "",
+  floor: "",
+  systemType: "",
+  systemName: "",
+  equipmentName: "",
+  equipmentCode: "",
+  manufacturer: "",
+  expiryDate: "",
+  quantity: 1,
+  location: "",
+  specification: "",
+});
+
+// 返回
 const goBack = () => {
   uni.navigateBack();
 };
 
-// 跳转编辑
-const goEdit = () => {
-  uni.navigateTo({
-    url: `/pages/equipment/form?id=${detail.value.equipmentId}`,
-  });
-};
+// 加载详情
+const loadDetail = async () => {
+  if (!equipmentId.value) return;
 
-// 获取状态样式类
-const getStatusClass = (status) => {
-  switch (status) {
-    case "0":
-      return "status-normal";
-    case "1":
-      return "status-warning";
-    case "2":
-      return "status-error";
-    default:
-      return "status-normal";
-  }
-};
-
-// 获取状态文本
-const getStatusText = (status) => {
-  switch (status) {
-    case "0":
-      return "正常";
-    case "1":
-      return "待维护";
-    case "2":
-      return "故障";
-    default:
-      return "正常";
-  }
-};
-
-// 加载设备详情
-const loadDetail = async (id) => {
   try {
-    const res = await api.getEquipmentDetail(id);
-    if (res.code === 200 && res.data) {
-      detail.value = res.data;
+    loading.value = true;
+    uni.showLoading({ title: "加载中...", mask: true });
+
+    const res = await api.getEquipmentDetail(equipmentId.value);
+    if (res.code === 200 || res.code === 0) {
+      const data = res.data || res;
+
+      formData.value = {
+        equipmentId: data.equipmentId,
+        companyId: data.companyId,
+        buildingId: data.buildingId,
+        buildingName: data.buildingName || "",
+        floor: data.floor || "",
+        equipmentType: data.systemType || data.equipmentType || "",
+        systemName: data.systemName || data.equipmentTypeName || "",
+        equipmentName: data.equipmentName || "",
+        equipmentCode: data.equipmentCode || data.equipmentId || "",
+        manufacturer: data.manufacturer || data.producer || "",
+        expiryDate: data.expiryDate || data.validDate || "",
+        quantity: data.quantity || data.equipmentCount || 1,
+        location: data.location || "",
+        specification: data.specification || data.model || "",
+      };
+
+      // 缓存数据供编辑页面使用
+      uni.setStorageSync("currentEquipment", formData.value);
     } else {
-      // 尝试从缓存获取
+      // 从缓存获取
       const cached = uni.getStorageSync("currentEquipment");
       if (cached) {
-        detail.value = cached;
+        formData.value = cached;
       }
     }
   } catch (e) {
-    console.error("获取设备详情失败", e);
-    // 使用缓存数据
+    console.error("获取详情失败", e);
     const cached = uni.getStorageSync("currentEquipment");
     if (cached) {
-      detail.value = cached;
+      formData.value = cached;
     }
+  } finally {
+    loading.value = false;
+    uni.hideLoading();
   }
 };
 
+// 前往编辑页面
+const goEdit = () => {
+  uni.navigateTo({
+    url: `/pages/equipment/edit?id=${formData.value.equipmentId}`,
+  });
+};
+
 onMounted(() => {
+  // 获取页面参数
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1];
-  const options = currentPage.options || {};
-
-  if (options.id) {
-    loadDetail(options.id);
-  } else {
-    // 从缓存获取
-    const cached = uni.getStorageSync("currentEquipment");
-    if (cached) {
-      detail.value = cached;
-    }
+  const id = currentPage.options?.id;
+  if (id) {
+    equipmentId.value = id;
+    loadDetail();
   }
 });
 </script>
 
 <style scoped>
 .page {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   background: #f5f5f5;
   display: flex;
   flex-direction: column;
 }
 
-/* 顶部导航 */
-.nav-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  height: calc(160rpx + env(safe-area-inset-top));
-  background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 30rpx;
-  padding-top: calc(60rpx + env(safe-area-inset-top));
+.content {
+  flex: 1;
+  padding: 20rpx;
+  padding-top: calc(16px + env(safe-area-inset-top) + 20rpx);
   box-sizing: border-box;
 }
 
-.nav-back,
-.nav-edit {
-  width: 80rpx;
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-}
-
-.nav-back {
-  justify-content: flex-start;
-}
-
-.nav-edit {
-  justify-content: flex-end;
-}
-
-.back-icon {
-  font-size: 48rpx;
-  color: #fff;
-  font-weight: bold;
-}
-
-.edit-text {
-  font-size: 28rpx;
-  color: #fff;
-}
-
-.nav-title {
-  font-size: 34rpx;
-  font-weight: bold;
-  color: #fff;
-}
-
-/* 表单内容 */
-.form-content {
-  flex: 1;
-  margin-top: calc(160rpx + env(safe-area-inset-top));
-  padding-bottom: 40rpx;
+/* 表单卡片 */
+.form-card {
+  background: #fff;
+  border-radius: 12rpx;
+  overflow: hidden;
 }
 
 .form-item {
   display: flex;
   align-items: center;
   padding: 28rpx 30rpx;
-  background: #fff;
   border-bottom: 1rpx solid #f0f0f0;
+}
+
+.form-item.last {
+  border-bottom: none;
 }
 
 .form-label {
   width: 160rpx;
   font-size: 28rpx;
-  color: #666;
+  color: #333;
   flex-shrink: 0;
 }
 
-.form-value-wrapper {
+.form-value {
   flex: 1;
+  font-size: 28rpx;
+  color: #1976d2;
+  text-align: left;
+}
+
+.form-value.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 按钮区域 */
+.btn-container {
+  margin-top: 40rpx;
+  padding: 0 20rpx 40rpx;
+}
+
+.action-btn {
+  height: 88rpx;
+  border-radius: 44rpx;
   display: flex;
   align-items: center;
-}
-
-.form-value {
-  font-size: 28rpx;
-  color: #333;
-}
-
-.form-value.status {
-  font-weight: 500;
-}
-
-.status-normal {
-  color: #4caf50;
-}
-
-.status-warning {
-  color: #ff9800;
-}
-
-.status-error {
-  color: #f44336;
-}
-
-/* 分隔线 */
-.section-divider {
-  height: 20rpx;
-  background: #f5f5f5;
-}
-
-/* 图片区域 */
-.image-section {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.image-wrapper {
-  width: 100%;
-  display: flex;
   justify-content: center;
-  margin-top: 20rpx;
+  background: #fff;
+  border: 2rpx solid #1976d2;
 }
 
-.qr-image {
-  width: 300rpx;
-  height: 300rpx;
+.action-btn text {
+  color: #1976d2;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+/* 覆盖 uni-nav-bar 样式 */
+:deep(.uni-nav-bar-text) {
+  font-size: 36rpx !important;
+  font-weight: bold !important;
+}
+
+:deep(.uni-navbar__header-container) {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  pointer-events: none;
+}
+
+:deep(.uni-navbar__header-container-inner) {
+  pointer-events: auto;
+}
+
+:deep(.uni-navbar__header-btns-left) {
+  z-index: 10 !important;
+  position: relative !important;
 }
 </style>
