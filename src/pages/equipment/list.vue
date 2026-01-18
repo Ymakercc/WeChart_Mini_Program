@@ -127,7 +127,9 @@
               </view>
               <view class="info-item right">
                 <text class="info-label">楼层</text>
-                <text class="info-value">{{ item.floor || "-" }}</text>
+                <text class="info-value">{{
+                  item.floorNo || item.floor || "-"
+                }}</text>
               </view>
             </view>
             <view class="info-row">
@@ -277,12 +279,13 @@ const loadEquipmentList = async () => {
 
     if (res.code === 200 || res.code === 0) {
       const data = res.rows || res.data || [];
-      // 筛选当前类型的设备
+      // 筛选当前类型的设备 - 优先使用 systemName 进行筛选
       if (typeCode.value) {
         equipmentList.value = data.filter(
           (item) =>
+            item.systemName === typeCode.value ||
             item.equipmentType === typeCode.value ||
-            item.systemType === typeCode.value
+            item.systemType === typeCode.value,
         );
       } else {
         equipmentList.value = data;
@@ -325,7 +328,14 @@ onMounted(() => {
 
 // 页面显示时刷新数据
 onShow(() => {
-  loadEquipmentList();
+  // 从缓存读取该类型的设备列表，避免 API 重新筛选导致数据丢失
+  const items = uni.getStorageSync("currentTypeEquipments");
+  if (items && Array.isArray(items) && items.length > 0) {
+    equipmentList.value = items;
+  } else {
+    // 只有缓存为空时才重新加载
+    loadEquipmentList();
+  }
 });
 
 onUnmounted(() => {

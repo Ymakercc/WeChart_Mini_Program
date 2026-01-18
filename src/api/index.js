@@ -172,8 +172,8 @@ export const editEquipment = (data) => {
 /**
  * 扫码获取设备
  */
-export const scanEquipment = (code) => {
-  return get(`/api/fire/equipment/scan/${code}`);
+export const scanEquipment = (equipmentCode) => {
+  return get(`/api/fire/equipment/scan/${equipmentCode}`);
 };
 
 /**

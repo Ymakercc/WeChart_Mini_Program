@@ -133,16 +133,16 @@ const loadDetail = async () => {
         companyId: data.companyId,
         buildingId: data.buildingId,
         buildingName: data.buildingName || "",
-        floor: data.floor || "",
-        equipmentType: data.systemType || data.equipmentType || "",
+        floor: data.floorNo || data.floor || "", // API 返回 floorNo
+        equipmentType: data.systemName || data.equipmentType || "", // API 返回 systemName
         systemName: data.systemName || data.equipmentTypeName || "",
         equipmentName: data.equipmentName || "",
         equipmentCode: data.equipmentCode || data.equipmentId || "",
         manufacturer: data.manufacturer || data.producer || "",
-        expiryDate: data.expiryDate || data.validDate || "",
+        expiryDate: data.expireDate || data.expiryDate || data.validDate || "", // API 返回 expireDate
         quantity: data.quantity || data.equipmentCount || 1,
         location: data.location || "",
-        specification: data.specification || data.model || "",
+        specification: data.model || data.specification || "", // API 返回 model
       };
 
       // 缓存数据供编辑页面使用

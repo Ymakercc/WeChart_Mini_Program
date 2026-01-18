@@ -192,6 +192,7 @@ const goPage = (url) => {
     "/pages/checkin/index",
     "/pages/equipment/index",
     "/pages/inspection/index",
+    "/pages/task/index",
   ];
   if (enabledPages.includes(url)) {
     uni.navigateTo({ url });
@@ -218,15 +219,15 @@ const handleCompanySelect = async (company) => {
       // 保存选中的公司信息
       uni.setStorageSync(
         "selectedCompanyId",
-        data.companyId || company.companyId
+        data.companyId || company.companyId,
       );
       uni.setStorageSync(
         "selectedCompanyName",
-        data.companyName || company.name || ""
+        data.companyName || company.name || "",
       );
       uni.setStorageSync(
         "selectedCompanyAddress",
-        data.address || company.address || ""
+        data.address || company.address || "",
       );
       uni.showToast({ title: "选择成功", icon: "success" });
     } else {

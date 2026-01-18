@@ -152,6 +152,27 @@
         "navigationStyle": "custom",
         "navigationBarTitleText": "巡检详情"
       }
+    },
+    {
+      "path": "pages/task/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "维保任务"
+      }
+    },
+    {
+      "path": "pages/task/detail",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "系统设备"
+      }
+    },
+    {
+      "path": "pages/task/system",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "系统设备"
+      }
     }
   ],
   "globalStyle": {

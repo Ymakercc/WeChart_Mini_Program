@@ -58,13 +58,15 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 const equipmentList = ref([]);
 const loading = ref(false);
 
-// 按设备类型分组
+// 按设备类型分组（使用 systemName 字段）
 const groupedEquipment = computed(() => {
   const groups = {};
 
   equipmentList.value.forEach((item) => {
-    const type = item.equipmentType || item.systemType || "其他";
-    const typeName = item.equipmentTypeName || item.systemTypeName || type;
+    // 优先使用 systemName 作为分组依据
+    const type =
+      item.systemName || item.equipmentType || item.systemType || "其他";
+    const typeName = type; // systemName 本身就是名称
 
     if (!groups[type]) {
       groups[type] = {
@@ -99,7 +101,7 @@ const goTypeList = (group) => {
   uni.setStorageSync("currentTypeEquipments", group.items);
   uni.navigateTo({
     url: `/pages/equipment/list?type=${encodeURIComponent(
-      group.type
+      group.type,
     )}&typeName=${encodeURIComponent(group.typeName)}`,
   });
 };

@@ -348,7 +348,7 @@ const confirmBuilding = () => {
     formData.value.buildingName = selected.buildingName;
     generateFloors(
       selected.aboveGroundFloors || 10,
-      selected.undergroundFloors || 2
+      selected.undergroundFloors || 2,
     );
   }
   showBuildingPicker.value = false;
@@ -376,19 +376,55 @@ const confirmSystem = () => {
   showSystemPicker.value = false;
 };
 
+// 从扫码结果中提取设备编码
+const extractEquipmentCode = (scanResult) => {
+  // 如果扫码结果是URL，提取最后一段作为设备编码
+  // 例如: http://43.142.75.179:83/public/api/equipment/EQ505706330063 -> EQ505706330063
+  if (scanResult.startsWith("http://") || scanResult.startsWith("https://")) {
+    const parts = scanResult.split("/");
+    return parts[parts.length - 1]; // 取URL最后一段
+  }
+  // 如果不是URL，直接返回扫码结果
+  return scanResult;
+};
+
 // 扫码
 const handleScan = () => {
   uni.scanCode({
     success: async (res) => {
       try {
-        const scanRes = await api.scanEquipment(res.result);
-        if (scanRes.code === 200 && scanRes.data) {
-          Object.assign(formData.value, scanRes.data);
+        const equipmentCode = extractEquipmentCode(res.result);
+        console.log("扫码结果:", res.result, "提取的设备编码:", equipmentCode);
+        const scanRes = await api.scanEquipment(equipmentCode);
+        if ((scanRes.code === 200 || scanRes.code === 0) && scanRes.data) {
+          const data = scanRes.data;
+          // 将API返回的字段映射到表单字段
+          formData.value.equipmentCode = data.equipmentCode || "";
+          formData.value.equipmentName = data.equipmentName || "";
+          formData.value.buildingId = data.buildingId || "";
+          formData.value.buildingName = data.buildingName || "";
+          formData.value.floor = data.floorNo || ""; // API返回 floorNo, 表单用 floor
+          formData.value.equipmentType =
+            data.systemName || data.equipmentType || ""; // 系统名称
+          formData.value.brand = data.manufacturer || ""; // API返回 manufacturer, 表单用 brand
+          formData.value.warrantyEndDate = data.expireDate || ""; // API返回 expireDate, 表单用 warrantyEndDate
+          formData.value.quantity = data.quantity || 1;
+          formData.value.location = data.location || "";
+          formData.value.specifications = data.model || ""; // API返回 model, 表单用 specifications
+
+          // 扫码采集是用来创建新设备的，不设置编辑模式
+          // 即使扫到已存在的设备信息，也是作为模板来创建新设备
+
           activeTab.value = "input";
+          uni.showToast({ title: "扫码成功", icon: "success" });
         } else {
-          uni.showToast({ title: "未找到设备信息", icon: "none" });
+          uni.showToast({
+            title: scanRes.msg || "未找到设备信息",
+            icon: "none",
+          });
         }
       } catch (e) {
+        console.error("扫码失败:", e);
         uni.showToast({ title: "扫码失败", icon: "none" });
       }
     },
