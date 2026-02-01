@@ -1,13 +1,16 @@
 <template>
   <view class="page">
-    <!-- 顶部导航 -->
-    <view class="nav-header">
-      <view class="nav-back" @tap="goBack">
-        <text class="back-icon">‹</text>
-      </view>
-      <text class="nav-title">{{ isEdit ? "编辑建筑" : "建筑登记" }}</text>
-      <view class="nav-placeholder"></view>
-    </view>
+    <!-- 使用 uni-nav-bar 自定义导航栏 -->
+    <uni-nav-bar
+      class="custom-nav"
+      fixed
+      status-bar
+      left-icon="back"
+      :title="isEdit ? '编辑建筑' : '建筑登记'"
+      background-color="#e53935"
+      color="#ffffff"
+      @clickLeft="goBack"
+    />
 
     <!-- 内容区域 -->
     <view class="content">
@@ -480,51 +483,40 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* 顶部导航 */
-.nav-header {
-  height: calc(160rpx + env(safe-area-inset-top));
-  background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 30rpx;
-  padding-top: calc(60rpx + env(safe-area-inset-top));
-  box-sizing: border-box;
-  flex-shrink: 0;
+/* 覆盖 uni-nav-bar 标题样式 */
+:deep(.uni-nav-bar-text) {
+  font-size: 36rpx !important;
+  font-weight: bold !important;
 }
 
-.nav-back {
-  width: 60rpx;
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* 让标题容器绝对定位实现真正居中 */
+:deep(.uni-navbar__header-container) {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  pointer-events: none;
 }
 
-.back-icon {
-  font-size: 48rpx;
-  color: #fff;
-  font-weight: bold;
+:deep(.uni-navbar__header-container-inner) {
+  pointer-events: auto;
 }
 
-.nav-title {
-  font-size: 34rpx;
-  font-weight: bold;
-  color: #fff;
-}
-
-.nav-placeholder {
-  width: 60rpx;
+/* 确保左侧按钮在标题容器之上可点击 */
+:deep(.uni-navbar__header-btns-left) {
+  z-index: 10 !important;
+  position: relative !important;
 }
 
 /* 内容区域 */
 .content {
   flex: 1;
-  height: calc(100vh - 180rpx);
   display: flex;
   flex-direction: column;
   gap: 20rpx;
   padding: 20rpx;
+  padding-top: calc(16px + env(safe-area-inset-top));
   background: #f5f5f5;
 }
 

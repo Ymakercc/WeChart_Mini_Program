@@ -91,14 +91,14 @@ const openPrivacyPolicy = () => {
   background: #fff;
 }
 
-/* 红色背景区域 - 带弧度 */
+/* 红色背景区域 - 白色到红色渐变，底部弧形 */
 .bg-area {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 45%;
-  background: linear-gradient(180deg, #e53935 0%, #d32f2f 100%);
+  height: 50%;
+  background: linear-gradient(180deg, #e6c7c7 0%, #f5a5a5 40%, #e53935 100%);
   border-radius: 0 0 50% 50% / 0 0 80rpx 80rpx;
 }
 
@@ -114,8 +114,8 @@ const openPrivacyPolicy = () => {
 }
 
 .logo-box {
-  width: 180rpx;
-  height: 180rpx;
+  width: 360rpx;
+  height: 360rpx;
   /* background: #fff; */
   border-radius: 50%;
   display: flex;
@@ -125,8 +125,8 @@ const openPrivacyPolicy = () => {
 }
 
 .logo {
-  width: 150rpx;
-  height: 150rpx;
+  width: 360rpx;
+  height: 360rpx;
 }
 
 .title {
