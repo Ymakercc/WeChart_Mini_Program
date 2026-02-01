@@ -122,6 +122,31 @@
           </uni-forms-item>
         </uni-forms>
 
+        <!-- 图片上传 -->
+        <view class="upload-section">
+          <view class="upload-grid">
+            <view
+              class="upload-item"
+              v-for="(img, idx) in imageList"
+              :key="idx"
+            >
+              <image
+                :src="img.tempPath"
+                mode="aspectFill"
+                @tap="previewImage(idx)"
+              />
+              <view class="delete-icon" @tap="removeImage(idx)">×</view>
+            </view>
+            <view
+              class="upload-btn"
+              v-if="imageList.length < 4"
+              @tap="chooseImage"
+            >
+              <uni-icons type="camera" size="32" color="#999" />
+            </view>
+          </view>
+        </view>
+
         <!-- 保存按钮 -->
         <view class="save-btn" @tap="handleSave">
           <text>保存</text>
@@ -214,7 +239,7 @@
 </template>
 
 <script setup>
-import api from "@/api/index";
+import api, { BASE_URL } from "@/api/index";
 import { onMounted, ref } from "vue";
 
 const formRef = ref(null);
@@ -233,7 +258,11 @@ const formData = ref({
   location: "",
   specifications: "",
   remark: "",
+  imageUrls: "",
 });
+
+// 图片列表
+const imageList = ref([]);
 
 const rules = {
   equipmentCode: {
@@ -295,7 +324,18 @@ const loadData = () => {
       location: cached.location || "",
       specifications: cached.specifications || cached.specification || "",
       remark: cached.remark || "",
+      imageUrls: cached.imageUrls || "",
     };
+
+    // 解析已有图片
+    if (cached.imageUrls) {
+      const urls = cached.imageUrls.split(",").filter((url) => url);
+      imageList.value = urls.map((url) => ({
+        tempPath: url,
+        serverUrl: url,
+        uploading: false,
+      }));
+    }
   }
 };
 
@@ -343,7 +383,7 @@ const confirmBuilding = () => {
     formData.value.buildingName = selected.buildingName;
     generateFloors(
       selected.aboveGroundFloors || 10,
-      selected.undergroundFloors || 2
+      selected.undergroundFloors || 2,
     );
   }
   showBuildingPicker.value = false;
@@ -369,6 +409,73 @@ const onSystemChange = (e) => {
 const confirmSystem = () => {
   formData.value.equipmentType = systemList.value[systemIndex.value];
   showSystemPicker.value = false;
+};
+
+// 选择图片
+const chooseImage = () => {
+  uni.chooseImage({
+    count: 4 - imageList.value.length,
+    sizeType: ["compressed"],
+    sourceType: ["album", "camera"],
+    success: (res) => {
+      res.tempFilePaths.forEach((path) => {
+        uploadImg(path);
+      });
+    },
+  });
+};
+
+// 上传图片
+const uploadImg = (tempPath) => {
+  const imgObj = { tempPath: tempPath, serverUrl: "", uploading: true };
+  imageList.value.push(imgObj);
+  const currentIndex = imageList.value.length - 1;
+
+  const token = uni.getStorageSync("token");
+
+  uni.uploadFile({
+    url: BASE_URL + "/common/upload",
+    filePath: tempPath,
+    name: "file",
+    formData: {},
+    header: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+    success: (uploadRes) => {
+      try {
+        const res = JSON.parse(uploadRes.data);
+        const url =
+          res.url || res.fileName || res.filePath || (res.data && res.data.url);
+        if (url) {
+          imageList.value[currentIndex].serverUrl = url;
+          imageList.value[currentIndex].uploading = false;
+        } else {
+          imageList.value.splice(currentIndex, 1);
+          uni.showToast({ title: res.msg || "上传失败", icon: "none" });
+        }
+      } catch (e) {
+        imageList.value.splice(currentIndex, 1);
+        uni.showToast({ title: "上传失败", icon: "none" });
+      }
+    },
+    fail: () => {
+      imageList.value.splice(currentIndex, 1);
+      uni.showToast({ title: "上传失败", icon: "none" });
+    },
+  });
+};
+
+// 移除图片
+const removeImage = (index) => {
+  imageList.value.splice(index, 1);
+};
+
+// 预览图片
+const previewImage = (index) => {
+  uni.previewImage({
+    urls: imageList.value.map((i) => i.tempPath),
+    current: index,
+  });
 };
 
 // 保存
@@ -397,6 +504,7 @@ const handleSave = async () => {
       location: formData.value.location,
       specifications: formData.value.specifications,
       remark: formData.value.remark,
+      imageUrls: imageList.value.map((img) => img.serverUrl).join(","),
     };
 
     const res = await api.editEquipment(payload);
@@ -502,6 +610,55 @@ onMounted(() => {
   color: #fff;
   font-size: 32rpx;
   font-weight: bold;
+}
+
+/* 图片上传 */
+.upload-section {
+  margin-top: 20rpx;
+  padding: 0 0 10rpx;
+}
+
+.upload-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.upload-item,
+.upload-btn {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 8rpx;
+  position: relative;
+}
+
+.upload-item image {
+  width: 100%;
+  height: 100%;
+  border-radius: 8rpx;
+}
+
+.delete-icon {
+  position: absolute;
+  top: -10rpx;
+  right: -10rpx;
+  width: 36rpx;
+  height: 36rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+}
+
+.upload-btn {
+  border: 2rpx solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
 }
 
 /* 选择器弹窗 */

@@ -69,11 +69,25 @@
         </view>
 
         <!-- 设备标识 -->
-        <view class="form-item last">
+        <view class="form-item" :class="{ last: imageList.length === 0 }">
           <text class="form-label">设备标识</text>
           <text class="form-value ellipsis">{{
             formData.equipmentCode || "-"
           }}</text>
+        </view>
+
+        <!-- 设备图片 -->
+        <view class="form-item last" v-if="imageList.length > 0">
+          <text class="form-label">设备图片</text>
+          <view class="image-grid">
+            <image
+              v-for="(img, idx) in imageList"
+              :key="idx"
+              :src="img"
+              mode="aspectFill"
+              @tap="previewImage(idx)"
+            />
+          </view>
         </view>
       </view>
 
@@ -88,8 +102,19 @@
 </template>
 
 <script setup>
-import api from "@/api/index";
+import api, { BASE_URL } from "@/api/index";
 import { onMounted, ref } from "vue";
+
+// 处理图片URL，添加BASE_URL前缀（如果需要）
+const getFullImageUrl = (url) => {
+  if (!url) return "";
+  // 如果已经是完整URL则直接返回
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  // 否则添加BASE_URL前缀
+  return BASE_URL + url;
+};
 
 const equipmentId = ref(null);
 const loading = ref(false);
@@ -109,7 +134,19 @@ const formData = ref({
   quantity: 1,
   location: "",
   specification: "",
+  imageUrls: "",
 });
+
+// 图片列表
+const imageList = ref([]);
+
+// 预览图片
+const previewImage = (index) => {
+  uni.previewImage({
+    urls: imageList.value,
+    current: index,
+  });
+};
 
 // 返回
 const goBack = () => {
@@ -143,7 +180,16 @@ const loadDetail = async () => {
         quantity: data.quantity || data.equipmentCount || 1,
         location: data.location || "",
         specification: data.model || data.specification || "", // API 返回 model
+        imageUrls: data.image || "",
       };
+
+      // 解析图片URL
+      if (data.image) {
+        imageList.value = data.image
+          .split(",")
+          .filter((url) => url)
+          .map((url) => getFullImageUrl(url.trim()));
+      }
 
       // 缓存数据供编辑页面使用
       uni.setStorageSync("currentEquipment", formData.value);
@@ -237,6 +283,20 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 图片显示 */
+.image-grid {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.image-grid image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 8rpx;
 }
 
 /* 按钮区域 */
