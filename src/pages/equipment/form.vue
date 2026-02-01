@@ -590,6 +590,17 @@ onMounted(() => {
     isEdit.value = true;
     equipmentId.value = options.id;
     loadEquipmentDetail(options.id);
+  } else if (options.fromScan === "true") {
+    // 从扫一扫页面跳转过来，读取缓存的设备数据
+    const scanData = uni.getStorageSync("scanEquipmentData");
+    if (scanData) {
+      formData.value = {
+        ...formData.value,
+        ...scanData,
+      };
+      // 使用后清除缓存
+      uni.removeStorageSync("scanEquipmentData");
+    }
   }
 });
 

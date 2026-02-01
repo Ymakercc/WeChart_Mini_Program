@@ -82,7 +82,7 @@
           </view>
         </view>
         <view class="view-history" @tap="goHistory">
-          <text>签到历史 >></text>
+          <text>签到历史</text>
         </view>
       </view>
     </view>
@@ -380,7 +380,7 @@ const handleSubmit = async () => {
     const payload = {
       companyId: selectedCompanyId.value,
       checkInType: checkType.value,
-      checkInAddress: currentAddress.value,
+      address: currentAddress.value,
       latitude: latitude.value,
       longitude: longitude.value,
       remark: remark.value,
@@ -660,12 +660,13 @@ onMounted(() => {
 }
 
 .view-history {
+  font-size: 30rpx;
   text-align: center;
   padding: 30rpx 0;
 }
 
 .view-history text {
-  font-size: 26rpx;
+  font-size: 30rpx;
   color: #1e88e5;
 }
 

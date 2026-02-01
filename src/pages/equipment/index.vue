@@ -243,12 +243,12 @@ onUnmounted(() => {
   bottom: 60rpx;
   width: 100rpx;
   height: 100rpx;
-  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+  background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(25, 118, 210, 0.4);
+  box-shadow: 0 8rpx 24rpx rgba(229, 57, 53, 0.4);
   z-index: 100;
 }
 

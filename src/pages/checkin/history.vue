@@ -35,7 +35,7 @@
           </view>
           <view class="detail-row">
             <text class="label">地址</text>
-            <text class="value">{{ item.checkInAddress || "-" }}</text>
+            <text class="value">{{ item.address || "-" }}</text>
           </view>
           <view class="detail-row" v-if="item.remark">
             <text class="label">备注</text>
