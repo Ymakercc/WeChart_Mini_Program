@@ -173,6 +173,13 @@
         "navigationStyle": "custom",
         "navigationBarTitleText": "系统设备"
       }
+    },
+    {
+      "path": "pages/task/device",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "检查项列表"
+      }
     }
   ],
   "globalStyle": {
