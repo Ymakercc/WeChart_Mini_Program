@@ -21,11 +21,19 @@
       <scroll-view class="company-list" scroll-y>
         <view
           class="company-item"
+          :class="{
+            'company-item-active': item.companyId === currentCompanyId,
+          }"
           v-for="item in filteredCompanyList"
-          :key="item.id"
+          :key="item.companyId"
           @tap="selectCompany(item)"
         >
-          <view class="company-name">{{ item.name }}</view>
+          <view class="company-name">
+            {{ item.companyName }}
+            <text v-if="item.companyId === currentCompanyId" class="current-tag"
+              >当前</text
+            >
+          </view>
           <view class="company-address">{{ item.address }}</view>
         </view>
 
@@ -34,18 +42,27 @@
           <text class="empty-text">暂无匹配的公司</text>
         </view>
       </scroll-view>
+
+      <!-- 加载遮罩 -->
+      <view class="loading-mask" v-if="loading">
+        <text class="loading-text">加载中...</text>
+      </view>
     </view>
   </view>
 </template>
 
 <script setup>
-import { getMyCompanyList } from "@/api";
+import { getMyCompanyList, switchCompany } from "@/api";
 import { computed, ref, watch } from "vue";
 
 const props = defineProps({
   visible: {
     type: Boolean,
     default: false,
+  },
+  currentCompanyId: {
+    type: [Number, String],
+    default: null,
   },
 });
 
@@ -62,9 +79,14 @@ const filteredCompanyList = computed(() => {
   }
   const keyword = searchKeyword.value.trim().toLowerCase();
   return (companyList.value || []).filter((item) => {
-    const name = (item.name || "").toLowerCase();
+    const name = (item.companyName || "").toLowerCase();
+    const shortName = (item.shortName || "").toLowerCase();
     const address = (item.address || "").toLowerCase();
-    return name.includes(keyword) || address.includes(keyword);
+    return (
+      name.includes(keyword) ||
+      shortName.includes(keyword) ||
+      address.includes(keyword)
+    );
   });
 });
 
@@ -74,9 +96,24 @@ const handleSearch = () => {
 };
 
 // 选择公司
-const selectCompany = (company) => {
-  emit("select", company);
-  closeDrawer();
+const selectCompany = async (company) => {
+  loading.value = true;
+  try {
+    // 调用切换公司接口
+    const res = await switchCompany({ companyId: company.companyId });
+    if (res.code === 200 || res.code === 0) {
+      uni.showToast({ title: "切换成功", icon: "success" });
+      emit("select", company);
+      closeDrawer();
+    } else {
+      uni.showToast({ title: res.msg || "切换失败", icon: "none" });
+    }
+  } catch (e) {
+    console.error("切换公司失败:", e);
+    uni.showToast({ title: "切换公司失败", icon: "none" });
+  } finally {
+    loading.value = false;
+  }
 };
 
 // 关闭抽屉
@@ -90,11 +127,19 @@ const loadCompanyList = async () => {
   try {
     const res = await getMyCompanyList();
     if ((res.code === 200 || res.code === 0) && res.data) {
+      // 保留完整的API响应数据
       companyList.value = res.data.map((item) => ({
         companyId: item.companyId,
-        id: item.companyId,
-        name: item.companyName || item.name || "未命名公司",
+        companyName: item.companyName || "未命名公司",
+        shortName: item.shortName || "",
         address: item.address || "暂无地址",
+        contactPerson: item.contactPerson || "",
+        contactPhone: item.contactPhone || "",
+        checkInAddress: item.checkInAddress || "",
+        checkInLongitude: item.checkInLongitude,
+        checkInLatitude: item.checkInLatitude,
+        checkInRadius: item.checkInRadius,
+        status: item.status,
       }));
     }
   } catch (e) {
@@ -113,7 +158,7 @@ watch(
       searchKeyword.value = "";
       loadCompanyList();
     }
-  }
+  },
 );
 </script>
 
@@ -220,5 +265,39 @@ watch(
 .empty-text {
   font-size: 28rpx;
   color: #999;
+}
+
+.company-item-active {
+  background: #fff5f5;
+  border-left: 4rpx solid #ea4542;
+}
+
+.current-tag {
+  display: inline-block;
+  margin-left: 10rpx;
+  padding: 2rpx 12rpx;
+  font-size: 20rpx;
+  color: #fff;
+  background: #ea4542;
+  border-radius: 16rpx;
+  vertical-align: middle;
+}
+
+.loading-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #666;
 }
 </style>

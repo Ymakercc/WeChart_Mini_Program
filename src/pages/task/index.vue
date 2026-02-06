@@ -87,6 +87,7 @@ const loading = ref(false);
 const pageNum = ref(1);
 const pageSize = ref(10);
 const hasMore = ref(true);
+const currentCompanyId = ref(null);
 
 // 返回
 const goBack = () => {
@@ -127,22 +128,40 @@ const getCurrentMonthRange = () => {
   };
 };
 
+// 加载当前选中的公司
+const loadCurrentCompany = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      currentCompanyId.value = res.data.companyId;
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 加载任务列表
 const loadTaskList = async () => {
   if (loading.value || !hasMore.value) return;
 
   try {
     loading.value = true;
-    const companyId = uni.getStorageSync("selectedCompanyId");
-    if (!companyId) {
-      uni.showToast({ title: "请先选择公司", icon: "none" });
-      return;
+
+    // 如果没有公司ID，先获取当前公司
+    if (!currentCompanyId.value) {
+      const companyId = await loadCurrentCompany();
+      if (!companyId) {
+        uni.showToast({ title: "请先选择公司", icon: "none" });
+        return;
+      }
     }
 
     const { beginTime, endTime } = getCurrentMonthRange();
 
     const res = await api.getMyTaskList({
-      companyId: companyId,
+      companyId: currentCompanyId.value,
       status: "",
       taskType: activeTab.value === "periodic" ? "0" : "1", // 0: 周期任务, 1: 临时任务
       params: {
@@ -210,7 +229,8 @@ const getStatusText = (status) => {
   return statusMap[status] || "待执行";
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await loadCurrentCompany();
   loadTaskList();
 });
 </script>

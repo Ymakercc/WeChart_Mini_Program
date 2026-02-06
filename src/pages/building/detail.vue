@@ -64,11 +64,11 @@
             <input
               v-if="isEditing"
               class="detail-input"
-              v-model="buildingData.buildingType"
+              v-model="buildingData.buildingTypeText"
               placeholder="请输入"
             />
             <text v-else class="detail-value">{{
-              buildingData.buildingType
+              buildingData.buildingTypeText
             }}</text>
           </view>
 
@@ -248,7 +248,7 @@ const buildingData = ref({
   buildingCode: "",
   buildingName: "",
   address: "",
-  buildingType: "",
+  buildingTypeText: "",
   area: "",
   buildingHeight: "",
   floors: "",
@@ -285,12 +285,27 @@ const handleSave = async () => {
   try {
     uni.showLoading({ title: "正在保存..." });
 
+    // 如果缺少 companyId，先从 API 获取
+    let companyId = buildingData.value.companyId;
+    if (!companyId) {
+      try {
+        const companyRes = await api.getCurrentCompany();
+        if (
+          (companyRes.code === 200 || companyRes.code === 0) &&
+          companyRes.data
+        ) {
+          companyId = companyRes.data.companyId;
+        }
+      } catch (e) {
+        console.error("获取当前公司失败:", e);
+      }
+    }
+
     // 构造提交数据
     const payload = {
       ...buildingData.value,
       buildingId: buildingData.value.buildingId,
-      companyId:
-        buildingData.value.companyId || uni.getStorageSync("selectedCompanyId"),
+      companyId: companyId,
       floors: Number(
         buildingData.value.floors || buildingData.value.floorCount || 0,
       ),

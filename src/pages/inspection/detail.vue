@@ -527,8 +527,7 @@ const loadDetail = async () => {
       formData.value = {
         inspectionId: data.inspectionId,
         companyId: data.companyId,
-        companyName:
-          data.companyName || uni.getStorageSync("selectedCompanyName") || "",
+        companyName: data.companyName || "",
         inspectionType: String(data.inspectionType || "1"),
         buildingId: data.buildingId,
         buildingName: data.buildingName || "",
@@ -581,10 +580,23 @@ const loadDetail = async () => {
   }
 };
 
+// 获取当前公司ID
+const getCurrentCompanyId = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 加载建筑列表
 const loadBuildings = async () => {
   try {
-    const companyId = uni.getStorageSync("selectedCompanyId");
+    const companyId = formData.value.companyId || (await getCurrentCompanyId());
     if (!companyId) return;
 
     const res = await api.getBuildingList({
@@ -650,7 +662,7 @@ const confirmBuilding = () => {
     formData.value.buildingName = selected.buildingName;
     generateFloors(
       selected.aboveGroundFloors || 10,
-      selected.undergroundFloors || 2
+      selected.undergroundFloors || 2,
     );
   }
   showBuildingPicker.value = false;

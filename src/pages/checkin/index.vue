@@ -77,7 +77,9 @@
               }}</text>
             </view>
             <view class="item-addr">
-              <text class="addr-text">{{ item.checkInAddress }}</text>
+              <text class="addr-text">{{
+                item.address || item.checkInAddress
+              }}</text>
             </view>
           </view>
         </view>
@@ -152,6 +154,7 @@ const markers = ref([]);
 const currentAddress = ref("");
 const selectedCompanyName = ref("");
 const selectedCompanyId = ref(null);
+const selectedTaskId = ref(null);
 
 const recentList = ref([]);
 const showDrawer = ref(false);
@@ -302,25 +305,15 @@ const uploadImg = async (tempPath) => {
           const res = JSON.parse(uploadRes.data);
           console.log("上传响应解析后:", res);
 
-          // 处理返回的 URL - 支持多种格式
-          let url = null;
+          // 优先使用 fileName (后端示例明确要求)
+          let url = res.fileName || (res.data && res.data.fileName);
 
-          // 如果返回的是数组（uploads 接口可能返回文件列表）
-          if (Array.isArray(res)) {
-            url = res[0]?.url || res[0]?.fileName || res[0]?.filePath;
-          } else if (res.data && Array.isArray(res.data)) {
-            url =
-              res.data[0]?.url ||
-              res.data[0]?.fileName ||
-              res.data[0]?.filePath;
-          } else {
-            // 常规对象格式
+          if (!url) {
+            // 后备方案：兼容其他可能的字段名
             url =
               res.url ||
-              res.fileName ||
               res.filePath ||
-              (res.data &&
-                (res.data.url || res.data.fileName || res.data.filePath));
+              (res.data && (res.data.url || res.data.filePath));
           }
 
           console.log("提取的URL:", url);
@@ -377,19 +370,32 @@ const handleSubmit = async () => {
 
   try {
     uni.showLoading({ title: "提交中...", mask: true });
+    console.log(imageList.value);
     const payload = {
       companyId: selectedCompanyId.value,
+      companyName: selectedCompanyName.value,
+      taskId: selectedTaskId.value, // 新增任务ID支持
       checkInType: checkType.value,
       address: currentAddress.value,
       latitude: latitude.value,
       longitude: longitude.value,
       remark: remark.value,
-      imageUrls: imageList.value.map((img) => img.serverUrl).join(","),
+      // 更新为新的图片对象数组格式
+
+      images: imageList.value.map((img, index) => ({
+        imageUrl: img.serverUrl,
+        imageName: `${checkType.value === "0" ? "签到" : "签退"}图片${index + 1}`,
+        sortOrder: index + 1,
+      })),
     };
 
     const res = await api.addCheckIn(payload);
     if (res && (res.code === 200 || res.code === 0)) {
-      uni.showToast({ title: "操作成功", icon: "success" });
+      wx.showToast({ title: "签到成功", icon: "success" });
+      if (res.data) {
+        console.log("签到ID:", res.data.checkInId);
+        console.log("是否在范围内:", res.data.isInRange);
+      }
       setTimeout(() => {
         closeDrawer();
         loadRecentList();
@@ -409,6 +415,8 @@ const handleSubmit = async () => {
 const loadRecentList = async () => {
   try {
     const res = await api.getCheckInList({
+      companyId: selectedCompanyId.value,
+      taskId: selectedTaskId.value,
       pageNum: 1,
       pageSize: 5,
     });
@@ -426,12 +434,41 @@ const formatTime = (timeStr) => {
   return timeStr.substring(0, 19).replace("T", " ");
 };
 
-onMounted(() => {
+onMounted(async () => {
   try {
-    // 从本地存储获取用户选择的公司
-    selectedCompanyId.value = uni.getStorageSync("selectedCompanyId");
-    selectedCompanyName.value =
-      uni.getStorageSync("selectedCompanyName") || "未选择公司";
+    // 优先从页面参数获取 taskId
+    const pages = getCurrentPages();
+    const currentPage = pages[pages.length - 1];
+    const options = currentPage.options || {};
+
+    if (options.taskId) {
+      selectedTaskId.value = options.taskId;
+      // 如果有任务ID，自动获取该任务关联的公司信息
+      uni.showLoading({ title: "加载任务信息..." });
+      try {
+        const res = await api.getTaskDetail(options.taskId);
+        if ((res.code === 200 || res.code === 0) && res.data) {
+          selectedCompanyId.value = res.data.companyId;
+          selectedCompanyName.value = res.data.companyName || "关联公司";
+        }
+      } catch (err) {
+        console.error("获取任务详情失败", err);
+      } finally {
+        uni.hideLoading();
+      }
+    } else {
+      // 否则从 API 获取当前选中的公司
+      try {
+        const res = await api.getCurrentCompany();
+        if ((res.code === 200 || res.code === 0) && res.data) {
+          selectedCompanyId.value = res.data.companyId;
+          selectedCompanyName.value = res.data.companyName || "当前公司";
+        }
+      } catch (err) {
+        console.error("获取当前公司失败", err);
+        selectedCompanyName.value = "未选择公司";
+      }
+    }
 
     getLocation();
     loadRecentList();

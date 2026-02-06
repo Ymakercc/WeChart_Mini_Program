@@ -264,10 +264,23 @@ const getInspectionClass = (item) => {
   return item.lastInspectionTime ? "text-normal" : "text-warning";
 };
 
+// 获取当前公司ID
+const getCurrentCompanyId = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 加载设备列表
 const loadEquipmentList = async () => {
   try {
-    const companyId = uni.getStorageSync("selectedCompanyId");
+    const companyId = await getCurrentCompanyId();
     if (!companyId) return;
 
     const res = await api.getEquipmentList({

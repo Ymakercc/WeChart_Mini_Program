@@ -86,6 +86,13 @@ export const getCompanyDetail = (companyId) => {
 };
 
 /**
+ * 获取当前选中的公司（从会话中读取）
+ */
+export const getCurrentCompany = () => {
+  return get("/api/fire/company/current");
+};
+
+/**
  * 获取设备状态统计
  */
 export const getEquipmentStats = () => {
@@ -384,6 +391,7 @@ export default {
   getMyCompanyList,
   switchCompany,
   getCompanyDetail,
+  getCurrentCompany,
   getEquipmentStats,
   getBuildingStats,
   // 建筑

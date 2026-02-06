@@ -95,6 +95,7 @@
     <!-- 公司选择抽屉 -->
     <CompanyDrawer
       :visible="showCompanyDrawer"
+      :currentCompanyId="selectedCompany?.companyId"
       @close="showCompanyDrawer = false"
       @select="handleCompanySelect"
     />
@@ -214,36 +215,22 @@ const handleCompanySelect = async (company) => {
     if ((res.code === 200 || res.code === 0) && res.data) {
       const data = res.data;
       selectedCompany.value = data;
-      projectName.value = data.companyName || company.name;
+      projectName.value = data.companyName || company.companyName;
       projectAddr.value = data.address || company.address;
-      // 保存选中的公司信息
-      uni.setStorageSync(
-        "selectedCompanyId",
-        data.companyId || company.companyId,
-      );
-      uni.setStorageSync(
-        "selectedCompanyName",
-        data.companyName || company.name || "",
-      );
-      uni.setStorageSync(
-        "selectedCompanyAddress",
-        data.address || company.address || "",
-      );
-      uni.showToast({ title: "选择成功", icon: "success" });
     } else {
       // 接口返回错误时使用列表数据作为后备
-      projectName.value = company.name;
+      selectedCompany.value = company;
+      projectName.value = company.companyName;
       projectAddr.value = company.address;
     }
   } catch (e) {
     console.error("获取公司详情失败:", e);
     // 失败时使用列表中的基础数据
-    projectName.value = company.name;
+    selectedCompany.value = company;
+    projectName.value = company.companyName;
     projectAddr.value = company.address;
   } finally {
     uni.hideLoading();
-    // 如果有其他数据需要刷新，可以在这里调用
-    // loadData();
   }
 };
 
@@ -252,21 +239,43 @@ const loadData = async () => {
     // 获取首页数据
     const res = await api.getHomeStats();
     if (res.data) {
-      projectName.value = res.data.projectName || "消防设备管理项目";
-      projectAddr.value = res.data.projectAddr || "默认地址";
+      // 只在没有选中公司时使用接口返回的项目信息
+      if (!selectedCompany.value) {
+        projectName.value = res.data.projectName || "消防设备管理项目";
+        projectAddr.value = res.data.projectAddr || "默认地址";
+      }
       monthPlan.value = res.data.monthPlan || { done: 0, total: 0 };
       deviceStats.value = res.data.deviceStats || { normal: 0, abnormal: 0 };
     }
   } catch (e) {
     // 使用默认数据
-    projectName.value = "消防设备管理项目";
-    projectAddr.value = "项目地址";
+    if (!selectedCompany.value) {
+      projectName.value = "消防设备管理项目";
+      projectAddr.value = "项目地址";
+    }
     monthPlan.value = { done: 0, total: 16 };
     deviceStats.value = { normal: 28, abnormal: 2 };
   }
 };
 
+// 加载当前选中的公司（从服务器会话中获取）
+const loadCurrentCompany = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      const data = res.data;
+      selectedCompany.value = data;
+      projectName.value = data.companyName || "暂无项目";
+      projectAddr.value = data.address || "请选择项目";
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+};
+
 onMounted(() => {
+  // 先加载当前选中的公司，再加载其他数据
+  loadCurrentCompany();
   loadData();
 });
 </script>

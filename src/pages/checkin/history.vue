@@ -43,13 +43,13 @@
           </view>
         </view>
 
-        <view class="item-images" v-if="item.imageUrls">
+        <view class="item-images" v-if="item.images && item.images.length > 0">
           <image
-            v-for="(img, idx) in splitImages(item.imageUrls)"
+            v-for="(img, idx) in item.images"
             :key="idx"
-            :src="getFullUrl(img)"
+            :src="getFullUrl(img.imageUrl)"
             mode="aspectFill"
-            @tap="previewImage(item.imageUrls, img)"
+            @tap="previewImage(item.images, idx)"
           ></image>
         </view>
       </view>
@@ -73,6 +73,7 @@ const pageNum = ref(1);
 const pageSize = 10;
 const loading = ref(false);
 const noMore = ref(false);
+const currentCompanyId = ref(null);
 
 const goBack = () => {
   uni.navigateBack();
@@ -84,23 +85,32 @@ const formatTime = (timeStr) => {
   return timeStr.substring(0, 19).replace("T", " ");
 };
 
-const splitImages = (urls) => {
-  if (!urls) return [];
-  return urls.split(",").filter((i) => !!i);
-};
-
 const getFullUrl = (url) => {
   if (!url) return "";
   if (url.startsWith("http")) return url;
   return BASE_URL + url;
 };
 
-const previewImage = (allUrls, currentUrl) => {
-  const urls = splitImages(allUrls).map((i) => getFullUrl(i));
+const previewImage = (images, index) => {
+  const urls = images.map((img) => getFullUrl(img.imageUrl));
   uni.previewImage({
     urls: urls,
-    current: getFullUrl(currentUrl),
+    current: urls[index],
   });
+};
+
+// 加载当前选中的公司
+const loadCurrentCompany = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      currentCompanyId.value = res.data.companyId;
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
 };
 
 const loadHistory = async () => {
@@ -108,7 +118,12 @@ const loadHistory = async () => {
 
   loading.value = true;
   try {
+    if (!currentCompanyId.value) {
+      await loadCurrentCompany();
+    }
+
     const res = await api.getCheckInList({
+      companyId: currentCompanyId.value,
       pageNum: pageNum.value,
       pageSize: pageSize,
     });
@@ -132,7 +147,8 @@ const loadMore = () => {
   loadHistory();
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await loadCurrentCompany();
   loadHistory();
 });
 </script>

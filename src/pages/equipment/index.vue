@@ -57,6 +57,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 
 const equipmentList = ref([]);
 const loading = ref(false);
+const currentCompanyId = ref(null);
 
 // 按设备类型分组（使用 systemName 字段）
 const groupedEquipment = computed(() => {
@@ -106,18 +107,35 @@ const goTypeList = (group) => {
   });
 };
 
+// 加载当前选中的公司
+const loadCurrentCompany = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      currentCompanyId.value = res.data.companyId;
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 加载设备列表
 const loadEquipmentList = async () => {
   try {
     loading.value = true;
-    const companyId = uni.getStorageSync("selectedCompanyId");
-    if (!companyId) {
-      uni.showToast({ title: "请先选择公司", icon: "none" });
-      return;
+
+    if (!currentCompanyId.value) {
+      const companyId = await loadCurrentCompany();
+      if (!companyId) {
+        uni.showToast({ title: "请先选择公司", icon: "none" });
+        return;
+      }
     }
 
     const res = await api.getEquipmentList({
-      companyId: companyId,
+      companyId: currentCompanyId.value,
       buildingId: "",
       equipmentType: "",
       status: "",
@@ -147,7 +165,8 @@ const handleRefresh = () => {
   loadEquipmentList();
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await loadCurrentCompany();
   loadEquipmentList();
   uni.$on("refreshEquipmentList", handleRefresh);
 });

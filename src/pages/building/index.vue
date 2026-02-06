@@ -77,6 +77,7 @@ import api from "@/api/index";
 import { onMounted, onUnmounted, ref } from "vue";
 
 const buildingList = ref([]);
+const currentCompanyId = ref(null);
 
 // 返回上一页
 const goBack = () => {
@@ -99,17 +100,33 @@ const goDetail = (item) => {
   });
 };
 
+// 加载当前选中的公司
+const loadCurrentCompany = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      currentCompanyId.value = res.data.companyId;
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 加载建筑列表
 const loadBuildingList = async () => {
   try {
-    const companyId = uni.getStorageSync("selectedCompanyId");
-    if (!companyId) {
-      uni.showToast({ title: "请先选择公司", icon: "none" });
-      return;
+    if (!currentCompanyId.value) {
+      const companyId = await loadCurrentCompany();
+      if (!companyId) {
+        uni.showToast({ title: "请先选择公司", icon: "none" });
+        return;
+      }
     }
 
     const res = await api.getBuildingList({
-      companyId: companyId,
+      companyId: currentCompanyId.value,
       buildingName: "",
       pageNum: 1,
       pageSize: 50,
@@ -135,7 +152,8 @@ const handleRefresh = () => {
   loadBuildingList();
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await loadCurrentCompany();
   loadBuildingList();
   // 注册事件监听器
   uni.$on("refreshBuildingList", handleRefresh);

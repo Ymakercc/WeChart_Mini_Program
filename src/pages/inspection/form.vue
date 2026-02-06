@@ -393,14 +393,34 @@ const onStatusChange = (e) => {
   formData.value.equipmentStatus = e.detail.value ? "0" : "1";
 };
 
+// 获取当前公司ID和名称
+const getCurrentCompany = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      return res.data;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 加载建筑列表
 const loadBuildings = async () => {
   try {
-    const companyId = uni.getStorageSync("selectedCompanyId");
-    if (!companyId) return;
+    if (!formData.value.companyId) {
+      const company = await getCurrentCompany();
+      if (company) {
+        formData.value.companyId = company.companyId;
+        formData.value.companyName = company.companyName || "当前公司";
+      }
+    }
+
+    if (!formData.value.companyId) return;
 
     const res = await api.getBuildingList({
-      companyId: companyId,
+      companyId: formData.value.companyId,
       pageNum: 1,
       pageSize: 100,
     });
@@ -437,7 +457,7 @@ const confirmBuilding = () => {
     formData.value.buildingName = selected.buildingName;
     generateFloors(
       selected.aboveGroundFloors || 10,
-      selected.undergroundFloors || 2
+      selected.undergroundFloors || 2,
     );
   }
   showBuildingPicker.value = false;
@@ -598,14 +618,23 @@ const handleSave = async () => {
   }
 };
 
-onMounted(() => {
-  // 填充公司信息
-  formData.value.companyId = uni.getStorageSync("selectedCompanyId");
-  formData.value.companyName =
-    uni.getStorageSync("selectedCompanyName") || "未选择公司";
-
+onMounted(async () => {
   // 设置当前时间
   formData.value.inspectionTime = getCurrentTime();
+
+  // 从 API 加载公司信息
+  try {
+    const company = await getCurrentCompany();
+    if (company) {
+      formData.value.companyId = company.companyId;
+      formData.value.companyName = company.companyName || "当前公司";
+    } else {
+      formData.value.companyName = "未选择公司";
+    }
+  } catch (e) {
+    console.error("获取公司信息失败", e);
+    formData.value.companyName = "未选择公司";
+  }
 
   loadBuildings();
   generateFloors();

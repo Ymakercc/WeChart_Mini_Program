@@ -144,6 +144,7 @@ const loading = ref(false);
 const noMore = ref(false);
 const pageNum = ref(1);
 const pageSize = ref(10);
+const currentCompanyId = ref(null);
 
 const datePopup = ref(null);
 const selectedDate = ref("");
@@ -206,16 +207,33 @@ const handleClear = () => {
   handleSearch();
 };
 
+// 加载当前选中的公司
+const loadCurrentCompany = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      currentCompanyId.value = res.data.companyId;
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 加载列表
 const loadList = async () => {
   if (loading.value || noMore.value) return;
 
   try {
     loading.value = true;
-    const companyId = uni.getStorageSync("selectedCompanyId");
+
+    if (!currentCompanyId.value) {
+      await loadCurrentCompany();
+    }
 
     const res = await api.getMyInspectionList({
-      companyId: companyId,
+      companyId: currentCompanyId.value,
       keyword: searchKeyword.value,
       inspectionDate: selectedDate.value,
       pageNum: pageNum.value,
@@ -315,7 +333,8 @@ const refreshList = () => {
   loadList();
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await loadCurrentCompany();
   loadList();
   // 监听刷新事件
   uni.$on("refreshInspectionList", refreshList);

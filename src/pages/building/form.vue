@@ -384,6 +384,19 @@ const validateForm = async () => {
   }
 };
 
+// 获取当前公司ID
+const getCurrentCompanyId = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 保存
 const handleSave = async () => {
   if (!(await validateForm())) return;
@@ -398,7 +411,7 @@ const handleSave = async () => {
     uni.showLoading({ title: "正在保存..." });
 
     // 获取当前选中的公司 ID
-    const companyId = uni.getStorageSync("selectedCompanyId");
+    const companyId = await getCurrentCompanyId();
     if (!companyId) {
       uni.showToast({ title: "未获取到公司信息", icon: "none" });
       return;
@@ -458,7 +471,7 @@ const handleSave = async () => {
 };
 
 // 页面加载
-onMounted(() => {
+onMounted(async () => {
   // 检查是否是编辑模式
   const building = uni.getStorageSync("editBuilding");
   if (building) {
@@ -481,10 +494,18 @@ onMounted(() => {
       typeIndex.value = idx;
     }
   } else {
-    // 新增模式：默认使用当前公司的地址
-    const companyAddress = uni.getStorageSync("selectedCompanyAddress");
-    if (companyAddress) {
-      formData.value.address = companyAddress;
+    // 新增模式：从 API 获取当前公司地址
+    try {
+      const res = await api.getCurrentCompany();
+      if (
+        (res.code === 200 || res.code === 0) &&
+        res.data &&
+        res.data.address
+      ) {
+        formData.value.address = res.data.address;
+      }
+    } catch (e) {
+      console.error("获取公司地址失败:", e);
     }
   }
 });

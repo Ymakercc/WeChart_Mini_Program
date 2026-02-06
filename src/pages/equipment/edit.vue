@@ -339,10 +339,23 @@ const loadData = () => {
   }
 };
 
+// 获取当前公司ID
+const getCurrentCompanyId = async () => {
+  try {
+    const res = await api.getCurrentCompany();
+    if ((res.code === 200 || res.code === 0) && res.data) {
+      return res.data.companyId;
+    }
+  } catch (e) {
+    console.error("获取当前公司失败:", e);
+  }
+  return null;
+};
+
 // 加载建筑列表
 const loadBuildings = async () => {
   try {
-    const companyId = uni.getStorageSync("selectedCompanyId");
+    const companyId = await getCurrentCompanyId();
     if (!companyId) return;
 
     const res = await api.getBuildingList({
@@ -489,7 +502,7 @@ const handleSave = async () => {
   try {
     uni.showLoading({ title: "保存中...", mask: true });
 
-    const companyId = uni.getStorageSync("selectedCompanyId");
+    const companyId = await getCurrentCompanyId();
     const payload = {
       equipmentId: equipmentId.value,
       companyId: companyId,
