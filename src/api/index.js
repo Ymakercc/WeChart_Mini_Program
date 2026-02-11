@@ -207,53 +207,49 @@ export const getTaskDetail = (taskId) => {
 };
 
 /**
- * 获取任务的系统列表
+ * 获取系统详情
  */
-export const getSystemsByTaskId = (taskId) => {
-  return get(`/api/fire/task/${taskId}/systems`);
+export const getSystemDetail = (recordId) => {
+  return get(`/api/fire/task/system/${recordId}`);
 };
 
 /**
- * 获取系统下的设备列表
+ * 获取设备详情
  */
-export const getDevicesBySystemId = (systemId) => {
-  return get(`/api/fire/task/system/${systemId}/devices`);
+export const getDeviceDetail = (recordId) => {
+  return get(`/api/fire/task/equipment/${recordId}`);
 };
 
 /**
- * 获取设备下的检查项列表
+ * 更新检查结果（快速操作）
  */
-export const getItemsByDeviceId = (deviceId) => {
-  return get(`/api/fire/task/device/${deviceId}/items`);
+export const updateCheckResult = (data) => {
+  return post("/api/fire/task/updateCheckResult", data);
 };
 
 /**
- * 提交检查结果
+ * 更新故障描述
+ * 请求参数{
+ *   "recordId": 301,
+ *   "faultDescription": "电源箱外壳破损，需要更换"
+ * }
  */
-export const submitCheckResult = (data) => {
-  return post("/api/fire/task/item/check", data);
+export const updateFaultDesc = (data) => {
+  return post("/api/fire/task/updateFaultDesc", data);
 };
 
 /**
- * 批量提交检查结果
+ * 跟新检查详情
+ * 请求参数{
+  "recordId": 301,
+  "checkResult": "2",
+  "faultDescription": "电源箱外壳破损，需要更换",
+  "otherNotes": "已通知维修人员",
+  "faultImages": "http://xxx.com/image1.jpg,http://xxx.com/image2.jpg"
+}
  */
-export const batchSubmitCheckResults = (data) => {
-  return post("/api/fire/task/item/batchCheck", data);
-};
-
-/**
- * 完成任务
- */
-export const completeTask = (data) => {
-  return post("/api/fire/task/complete", data);
-};
-
-/**
- * 获取任务统计
- * @param {Object} params - { companyId, month }
- */
-export const getTaskStatistics = (params) => {
-  return get("/api/fire/task/statistics", params);
+export const updateCheckDetail = (data) => {
+  return post("/api/fire/task/updateCheckDetail", data);
 };
 
 // ==================== 维保测试（巡检管理） =================---
@@ -410,13 +406,11 @@ export default {
   // 任务
   getMyTaskList,
   getTaskDetail,
-  getSystemsByTaskId,
-  getDevicesBySystemId,
-  getItemsByDeviceId,
-  submitCheckResult,
-  batchSubmitCheckResults,
-  completeTask,
-  getTaskStatistics,
+  getSystemDetail,
+  getDeviceDetail,
+  updateCheckResult,
+  updateFaultDesc,
+  updateCheckDetail,
   // 巡检
   getInspectionList,
   getMyInspectionList,

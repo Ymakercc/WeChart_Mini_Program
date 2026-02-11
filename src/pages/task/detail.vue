@@ -24,11 +24,13 @@
         <view
           class="system-card"
           v-for="item in systemList"
-          :key="item.systemId"
+          :key="item.recordId"
           @tap="goSystemDetail(item)"
         >
           <!-- 系统名称 -->
-          <view class="system-name">{{ item.systemName }}</view>
+          <view class="system-name">{{
+            item.itemName || item.systemName
+          }}</view>
 
           <!-- 统计信息 -->
           <view class="system-stats">
@@ -131,7 +133,7 @@ const loadSystemList = async () => {
 
   try {
     loading.value = true;
-    const res = await api.getSystemsByTaskId(taskId.value);
+    const res = await api.getTaskDetail(taskId.value);
 
     if (res.code === 200 || res.code === 0) {
       systemList.value = res.data || res.rows || [];
@@ -147,7 +149,7 @@ const loadSystemList = async () => {
 const goSystemDetail = (item) => {
   uni.setStorageSync("currentSystem", item);
   uni.navigateTo({
-    url: `/pages/task/system?id=${item.systemId}&taskId=${taskId.value}`,
+    url: `/pages/task/system?recordId=${item.recordId}`,
   });
 };
 

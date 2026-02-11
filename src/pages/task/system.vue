@@ -5,7 +5,7 @@
       fixed
       status-bar
       left-icon="back"
-      title="系统设备"
+      title="设备列表"
       background-color="#e53935"
       color="#ffffff"
       @clickLeft="goBack"
@@ -16,7 +16,7 @@
       <!-- 系统标题头部 -->
       <view class="system-header">
         <text class="header-icon">📋</text>
-        <text class="header-title">{{ systemInfo.systemName || "系统" }}</text>
+        <text class="header-title">{{ systemInfo.itemName || "系统" }}</text>
       </view>
 
       <!-- 设备列表 -->
@@ -24,13 +24,12 @@
         <view
           class="device-card"
           v-for="item in deviceList"
-          :key="item.deviceId"
+          :key="item.recordId"
           @tap="goDeviceDetail(item)"
         >
           <!-- 设备名称和标签 -->
           <view class="device-header">
-            <text class="device-name">{{ item.deviceName }}</text>
-            <text class="device-tag">巡查</text>
+            <text class="device-name">{{ item.itemName }}</text>
           </view>
 
           <!-- 统计信息 -->
@@ -80,8 +79,7 @@
 import api from "@/api/index";
 import { onMounted, ref } from "vue";
 
-const systemId = ref(null);
-const taskId = ref(null);
+const recordId = ref(null);
 const loading = ref(false);
 const systemInfo = ref({});
 const deviceList = ref([]);
@@ -93,14 +91,20 @@ const goBack = () => {
 
 // 加载设备列表
 const loadDeviceList = async () => {
-  if (!systemId.value) return;
+  if (!recordId.value) return;
 
   try {
     loading.value = true;
-    const res = await api.getDevicesBySystemId(systemId.value);
+    const res = await api.getSystemDetail(recordId.value);
 
     if (res.code === 200 || res.code === 0) {
-      deviceList.value = res.data || res.rows || [];
+      const data = res.data || {};
+      // 系统信息
+      if (data.system) {
+        systemInfo.value = data.system;
+      }
+      // 设备列表
+      deviceList.value = data.equipments || [];
     }
   } catch (e) {
     console.error("获取设备列表失败:", e);
@@ -114,7 +118,7 @@ const loadDeviceList = async () => {
 const goDeviceDetail = (item) => {
   uni.setStorageSync("currentDevice", item);
   uni.navigateTo({
-    url: `/pages/task/device?id=${item.deviceId}&systemId=${systemId.value}&taskId=${taskId.value}`,
+    url: `/pages/task/device?recordId=${item.recordId}`,
   });
 };
 
@@ -124,8 +128,7 @@ onMounted(() => {
   const currentPage = pages[pages.length - 1];
   const options = currentPage.options || {};
 
-  systemId.value = options.id;
-  taskId.value = options.taskId;
+  recordId.value = options.recordId;
 
   // 从缓存获取系统信息
   const cached = uni.getStorageSync("currentSystem");
