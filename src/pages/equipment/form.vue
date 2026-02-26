@@ -39,14 +39,6 @@
           label-width="160rpx"
           label-align="left"
         >
-          <!-- 设备编号 -->
-          <uni-forms-item label="设备编号" name="equipmentCode" required>
-            <uni-easyinput
-              v-model="formData.equipmentCode"
-              placeholder="请输入设备编号"
-            />
-          </uni-forms-item>
-
           <!-- 所在建筑 -->
           <uni-forms-item label="所在建筑" name="buildingId">
             <view class="picker-wrapper" @tap="showBuildingPicker = true">
@@ -59,21 +51,28 @@
           </uni-forms-item>
 
           <!-- 所在楼层 -->
-          <uni-forms-item label="所在楼层" name="floor">
-            <view class="picker-wrapper" @tap="showFloorPicker = true">
-              <text v-if="!formData.floor" class="placeholder">请选择</text>
-              <text v-else>{{ formData.floor }}</text>
-              <text class="arrow">›</text>
-            </view>
+          <uni-forms-item label="所在楼层" name="floorNo">
+            <uni-easyinput
+              v-model="formData.floorNo"
+              placeholder="请输入所在楼层"
+            />
           </uni-forms-item>
 
           <!-- 系统名称 -->
-          <uni-forms-item label="系统名称" name="equipmentType">
-            <view class="picker-wrapper" @tap="showSystemPicker = true">
-              <text v-if="!formData.equipmentType" class="placeholder"
+          <uni-forms-item label="系统名称" name="systemName">
+            <uni-easyinput
+              v-model="formData.systemName"
+              placeholder="请输入系统名称"
+            />
+          </uni-forms-item>
+
+          <!-- 项目类别 -->
+          <uni-forms-item label="项目类别" name="projectCategory">
+            <view class="picker-wrapper" @tap="showProjectCategoryPicker = true">
+              <text v-if="!formData.projectCategory" class="placeholder"
                 >请选择</text
               >
-              <text v-else>{{ formData.equipmentType }}</text>
+              <text v-else>{{ formData.projectCategory }}</text>
               <text class="arrow">›</text>
             </view>
           </uni-forms-item>
@@ -82,23 +81,23 @@
           <uni-forms-item label="设备名称" name="equipmentName" required>
             <uni-easyinput
               v-model="formData.equipmentName"
-              placeholder="请输入设备名称"
+              placeholder="请选择或输入"
             />
           </uni-forms-item>
 
           <!-- 生产厂家 -->
-          <uni-forms-item label="生产厂家" name="brand">
+          <uni-forms-item label="生产厂家" name="manufacturer">
             <uni-easyinput
-              v-model="formData.brand"
-              placeholder="请输入生产厂家"
+              v-model="formData.manufacturer"
+              placeholder="请输入并选择生产厂家"
             />
           </uni-forms-item>
 
           <!-- 有效日期 -->
-          <uni-forms-item label="有效日期" name="warrantyEndDate">
+          <uni-forms-item label="有效日期" name="expireDate">
             <uni-datetime-picker
               type="date"
-              v-model="formData.warrantyEndDate"
+              v-model="formData.expireDate"
               :clear-icon="false"
             />
           </uni-forms-item>
@@ -117,14 +116,14 @@
           <uni-forms-item label="具体位置" name="location" required>
             <uni-easyinput
               v-model="formData.location"
-              placeholder="请输入具体位置"
+              placeholder="必填"
             />
           </uni-forms-item>
 
           <!-- 规格型号 -->
-          <uni-forms-item label="规格型号" name="specifications">
+          <uni-forms-item label="规格型号" name="model">
             <uni-easyinput
-              v-model="formData.specifications"
+              v-model="formData.model"
               placeholder="选填"
             />
           </uni-forms-item>
@@ -132,6 +131,7 @@
 
         <!-- 图片上传 -->
         <view class="upload-section">
+          <view class="upload-label">设备图片：</view>
           <view class="upload-grid">
             <view
               class="upload-item"
@@ -188,58 +188,6 @@
       </view>
     </uni-popup>
 
-    <!-- 楼层选择器 -->
-    <view
-      class="picker-mask"
-      v-if="showFloorPicker"
-      @tap="showFloorPicker = false"
-    >
-      <view class="picker-popup" @tap.stop>
-        <view class="picker-header">
-          <text @tap="showFloorPicker = false">取消</text>
-          <text class="picker-title">选择楼层</text>
-          <text @tap="confirmFloor">确定</text>
-        </view>
-        <picker-view
-          :value="[floorIndex]"
-          @change="onFloorChange"
-          class="picker-view"
-        >
-          <picker-view-column>
-            <view class="picker-item" v-for="item in floorList" :key="item">
-              {{ item }}
-            </view>
-          </picker-view-column>
-        </picker-view>
-      </view>
-    </view>
-
-    <!-- 系统选择器 -->
-    <view
-      class="picker-mask"
-      v-if="showSystemPicker"
-      @tap="showSystemPicker = false"
-    >
-      <view class="picker-popup" @tap.stop>
-        <view class="picker-header">
-          <text @tap="showSystemPicker = false">取消</text>
-          <text class="picker-title">选择系统</text>
-          <text @tap="confirmSystem">确定</text>
-        </view>
-        <picker-view
-          :value="[systemIndex]"
-          @change="onSystemChange"
-          class="picker-view"
-        >
-          <picker-view-column>
-            <view class="picker-item" v-for="item in systemList" :key="item">
-              {{ item }}
-            </view>
-          </picker-view-column>
-        </picker-view>
-      </view>
-    </view>
-
     <!-- 建筑选择器遮罩 -->
     <view
       class="picker-mask"
@@ -269,6 +217,36 @@
         </picker-view>
       </view>
     </view>
+
+    <!-- 项目类别选择器遮罩 -->
+    <view
+      class="picker-mask"
+      v-if="showProjectCategoryPicker"
+      @tap="showProjectCategoryPicker = false"
+    >
+      <view class="picker-popup" @tap.stop>
+        <view class="picker-header">
+          <text @tap="showProjectCategoryPicker = false">取消</text>
+          <text class="picker-title">选择项目类别</text>
+          <text @tap="confirmProjectCategory">确定</text>
+        </view>
+        <picker-view
+          :value="[projectCategoryIndex]"
+          @change="onProjectCategoryChange"
+          class="picker-view"
+        >
+          <picker-view-column>
+            <view
+              class="picker-item"
+              v-for="item in projectCategoryList"
+              :key="item.value"
+            >
+              {{ item.label }}
+            </view>
+          </picker-view-column>
+        </picker-view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -282,26 +260,24 @@ const isEdit = ref(false);
 const equipmentId = ref(null);
 
 const formData = ref({
-  equipmentCode: "",
+  equipmentCode: "", // 设备编号（后台自动生成，但在前端这里可能保留用于显示或编辑）
   buildingId: "",
   buildingName: "",
-  floor: "",
-  equipmentType: "",
+  floorNo: "", // 所在楼层
+  systemName: "", // 系统名称
+  projectCategory: "", // 项目类别
   equipmentName: "",
-  brand: "",
-  warrantyEndDate: "",
+  manufacturer: "", // 生产厂家
+  expireDate: "", // 有效日期
   quantity: 1,
   location: "",
-  specifications: "",
+  model: "", // 规格型号
 });
 
 // 图片列表
 const imageList = ref([]);
 
 const rules = {
-  equipmentCode: {
-    rules: [{ required: true, errorMessage: "请输入设备编号" }],
-  },
   equipmentName: {
     rules: [{ required: true, errorMessage: "请输入设备名称" }],
   },
@@ -309,23 +285,13 @@ const rules = {
 };
 
 const buildingList = ref([]);
-const floorList = ref([]);
-const systemList = ref([
-  "消火栓系统",
-  "自动喷水灭火系统",
-  "火灾自动报警系统",
-  "防排烟系统",
-  "应急照明系统",
-  "灭火器",
-]);
+const projectCategoryList = ref([]); // 项目类别列表
 
 const showBuildingPicker = ref(false);
-const showFloorPicker = ref(false);
-const showSystemPicker = ref(false);
+const showProjectCategoryPicker = ref(false);
 
 const buildingIndex = ref(0);
-const floorIndex = ref(0);
-const systemIndex = ref(0);
+const projectCategoryIndex = ref(0);
 
 // 返回上一页
 const goBack = () => {
@@ -365,16 +331,17 @@ const loadBuildings = async () => {
   }
 };
 
-// 生成楼层列表
-const generateFloors = (aboveGround = 10, underground = 2) => {
-  const floors = [];
-  for (let i = underground; i >= 1; i--) {
-    floors.push(`B${i}`);
+// 加载项目类别列表
+const loadProjectCategories = async () => {
+  try {
+    const res = await api.getSystemTypes();
+    if (res.code === 200 || res.code === 0) {
+      // 接口返回 [{value: 'code', label: 'name'}]
+      projectCategoryList.value = res.data || [];
+    }
+  } catch (e) {
+    console.error("获取项目类别失败", e);
   }
-  for (let i = 1; i <= aboveGround; i++) {
-    floors.push(`${i}F`);
-  }
-  floorList.value = floors;
 };
 
 // 建筑选择
@@ -387,40 +354,26 @@ const confirmBuilding = () => {
     const selected = buildingList.value[buildingIndex.value];
     formData.value.buildingId = selected.buildingId;
     formData.value.buildingName = selected.buildingName;
-    generateFloors(
-      selected.aboveGroundFloors || 10,
-      selected.undergroundFloors || 2,
-    );
   }
   showBuildingPicker.value = false;
 };
 
-// 楼层选择
-const onFloorChange = (e) => {
-  floorIndex.value = e.detail.value[0];
+// 项目类别选择
+const onProjectCategoryChange = (e) => {
+  projectCategoryIndex.value = e.detail.value[0];
 };
 
-const confirmFloor = () => {
-  if (floorList.value.length > 0) {
-    formData.value.floor = floorList.value[floorIndex.value];
+const confirmProjectCategory = () => {
+  if (projectCategoryList.value.length > 0) {
+    const selected = projectCategoryList.value[projectCategoryIndex.value];
+    formData.value.projectCategory = selected.label; // 保存名称
   }
-  showFloorPicker.value = false;
-};
-
-// 系统选择
-const onSystemChange = (e) => {
-  systemIndex.value = e.detail.value[0];
-};
-
-const confirmSystem = () => {
-  formData.value.equipmentType = systemList.value[systemIndex.value];
-  showSystemPicker.value = false;
+  showProjectCategoryPicker.value = false;
 };
 
 // 从扫码结果中提取设备编码
 const extractEquipmentCode = (scanResult) => {
   // 如果扫码结果是URL，提取最后一段作为设备编码
-  // 例如: http://43.142.75.179:83/public/api/equipment/EQ505706330063 -> EQ505706330063
   if (scanResult.startsWith("http://") || scanResult.startsWith("https://")) {
     const parts = scanResult.split("/");
     return parts[parts.length - 1]; // 取URL最后一段
@@ -444,18 +397,15 @@ const handleScan = () => {
           formData.value.equipmentName = data.equipmentName || "";
           formData.value.buildingId = data.buildingId || "";
           formData.value.buildingName = data.buildingName || "";
-          formData.value.floor = data.floorNo || ""; // API返回 floorNo, 表单用 floor
-          formData.value.equipmentType =
-            data.systemName || data.equipmentType || ""; // 系统名称
-          formData.value.brand = data.manufacturer || ""; // API返回 manufacturer, 表单用 brand
-          formData.value.warrantyEndDate = data.expireDate || ""; // API返回 expireDate, 表单用 warrantyEndDate
+          formData.value.floorNo = data.floorNo || ""; 
+          formData.value.systemName = data.systemName || ""; 
+          formData.value.projectCategory = data.projectCategory || "";
+          formData.value.manufacturer = data.manufacturer || ""; 
+          formData.value.expireDate = data.expireDate || ""; 
           formData.value.quantity = data.quantity || 1;
           formData.value.location = data.location || "";
-          formData.value.specifications = data.model || ""; // API返回 model, 表单用 specifications
-
-          // 扫码采集是用来创建新设备的，不设置编辑模式
-          // 即使扫到已存在的设备信息，也是作为模板来创建新设备
-
+          formData.value.model = data.model || ""; 
+          
           activeTab.value = "input";
           uni.showToast({ title: "扫码成功", icon: "success" });
         } else {
@@ -560,10 +510,11 @@ const handleSave = async () => {
     uni.showLoading({ title: "保存中...", mask: true });
 
     const companyId = await getCurrentCompanyId();
+    // 构造提交数据
     const payload = {
       ...formData.value,
       companyId: companyId,
-      imageUrls: imageList.value.map((img) => img.serverUrl).join(","),
+      image: imageList.value.map((img) => img.serverUrl).join(","), // 字段改为 image 单数字符串
     };
 
     let res;
@@ -593,7 +544,7 @@ const handleSave = async () => {
 
 onMounted(() => {
   loadBuildings();
-  generateFloors();
+  loadProjectCategories();
 
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1];
@@ -607,9 +558,18 @@ onMounted(() => {
     // 从扫一扫页面跳转过来，读取缓存的设备数据
     const scanData = uni.getStorageSync("scanEquipmentData");
     if (scanData) {
+      // 这里的 scanData 已经是 mapped 过的（如果是在 index.js 里 mapping），
+      // 或者需要在这里 mapping。假设 index.vue 的 scan 逻辑把原始数据存进去了
+      // 但其实这里最好重新 map 一下以防万一
       formData.value = {
         ...formData.value,
         ...scanData,
+        // 确保字段一致性
+        floorNo: scanData.floorNo || scanData.floor || "",
+        systemName: scanData.systemName || scanData.equipmentType || "",
+        manufacturer: scanData.manufacturer || scanData.brand || "",
+        model: scanData.model || scanData.specifications || "",
+        expireDate: scanData.expireDate || scanData.warrantyEndDate || "",
       };
       // 使用后清除缓存
       uni.removeStorageSync("scanEquipmentData");
@@ -621,7 +581,18 @@ const loadEquipmentDetail = async (id) => {
   try {
     const res = await api.getEquipmentDetail(id);
     if (res.code === 200 && res.data) {
-      Object.assign(formData.value, res.data);
+      const data = res.data;
+      // 赋值给 formData
+      Object.assign(formData.value, data);
+      
+      // 处理图片显示
+      if (data.image) {
+        imageList.value = data.image.split(",").map(url => ({
+          tempPath: url,
+          serverUrl: url,
+          uploading: false
+        }));
+      }
     }
   } catch (e) {
     console.error("获取设备详情失败", e);
@@ -740,6 +711,12 @@ const loadEquipmentDetail = async (id) => {
   padding: 0 0 10rpx;
 }
 
+.upload-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
 .upload-grid {
   display: flex;
   flex-wrap: wrap;
@@ -783,19 +760,61 @@ const loadEquipmentDetail = async (id) => {
   background: #f9f9f9;
 }
 
-/* 扫码内容 */
-.scan-content {
-  flex: 1;
+/* 遮罩和弹窗 */
+.picker-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 20rpx;
-  background: #fff;
-  border-radius: 16rpx;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
-.scan-placeholder {
+.picker-popup {
+  background: #fff;
+  border-radius: 24rpx 24rpx 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.picker-header {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.picker-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.picker-header text:first-child {
+  color: #999;
+  font-size: 28rpx;
+}
+
+.picker-header text:last-child {
+  color: #e53935;
+  font-size: 28rpx;
+}
+
+.picker-view {
+  width: 100%;
+  height: 500rpx;
+}
+
+.picker-item {
+  line-height: 80rpx;
   text-align: center;
+  font-size: 30rpx;
+  color: #333;
 }
 
 .scan-placeholder text {
