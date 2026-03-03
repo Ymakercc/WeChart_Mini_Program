@@ -194,6 +194,7 @@ const goPage = (url) => {
     "/pages/equipment/index",
     "/pages/inspection/index",
     "/pages/task/index",
+    "/pages/report/index",
   ];
   if (enabledPages.includes(url)) {
     uni.navigateTo({ url });
@@ -217,6 +218,9 @@ const handleCompanySelect = async (company) => {
       selectedCompany.value = data;
       projectName.value = data.companyName || company.companyName;
       projectAddr.value = data.address || company.address;
+
+      // 持久化切换公司到后端会话
+      api.switchCompany({ companyId: data.companyId });
     } else {
       // 接口返回错误时使用列表数据作为后备
       selectedCompany.value = company;

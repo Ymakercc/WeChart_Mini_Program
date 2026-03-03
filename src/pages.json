@@ -180,6 +180,13 @@
         "navigationStyle": "custom",
         "navigationBarTitleText": "检查项列表"
       }
+    },
+    {
+      "path": "pages/report/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "维保报告"
+      }
     }
   ],
   "globalStyle": {

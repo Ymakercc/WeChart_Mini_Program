@@ -3,7 +3,7 @@
  * 基础路径: http://43.142.75.179:83
  */
 
-import { BASE_URL, get, post, upload } from "@/utils/request";
+import { BASE_URL, get, getToken, post, upload } from "@/utils/request";
 
 export { BASE_URL };
 
@@ -341,21 +341,28 @@ export const uploadFile = (filePath, formData) => {
  * 获取报告列表
  */
 export const getReportList = (data) => {
-  return post("/api/fire/report/list", data);
+  return post("/fire/report/list", data);
 };
 
 /**
  * 获取报告详情
  */
 export const getReportDetail = (id) => {
-  return get(`/api/fire/report/detail/${id}`);
+  return get(`/fire/report/detail/${id}`);
 };
 
 /**
  * 下载报告URL
  */
 export const getReportDownloadUrl = (id) => {
-  return `/api/fire/report/download/${id}`;
+  return `/fire/report/download/${id}`;
+};
+
+/**
+ * 预览报告URL
+ */
+export const getReportPreviewUrl = (id) => {
+  return `/fire/report/preview/${id}`;
 };
 
 // ==================== 字典数据 ====================
@@ -427,9 +434,13 @@ export default {
   getReportList,
   getReportDetail,
   getReportDownloadUrl,
+  getReportPreviewUrl,
   // 字典
   getSystemTypes,
   getInspectionTypes,
   // 文件
   uploadFile,
+  // 基础
+  BASE_URL,
+  getToken,
 };
