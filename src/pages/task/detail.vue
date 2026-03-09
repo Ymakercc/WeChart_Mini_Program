@@ -77,7 +77,8 @@
 
 <script setup>
 import api from "@/api/index";
-import { onMounted, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
+import { ref } from "vue";
 
 const taskId = ref(null);
 const loading = ref(false);
@@ -159,7 +160,7 @@ const goSystemDetail = (item) => {
   });
 };
 
-onMounted(() => {
+onShow(() => {
   // 获取页面参数
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1];

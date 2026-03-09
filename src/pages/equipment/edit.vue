@@ -51,17 +51,24 @@
 
           <!-- 系统名称 -->
           <uni-forms-item label="系统名称" name="equipmentType">
-            <view class="picker-wrapper" @tap="showSystemPicker = true">
-              <text v-if="!formData.equipmentType" class="placeholder"
-                >请选择</text
+            <view class="system-input-wrapper">
+              <uni-easyinput
+                v-model="formData.equipmentType"
+                placeholder="请输入或从右侧列表选择"
+                class="flex-1"
+              />
+              <picker
+                class="preset-picker"
+                :range="systemNamePresets"
+                @change="onSystemPresetChange"
               >
-              <text v-else>{{ formData.equipmentType }}</text>
-              <text class="arrow">›</text>
+                <view class="preset-btn">列表</view>
+              </picker>
             </view>
           </uni-forms-item>
 
           <!-- 设备名称 -->
-          <uni-forms-item label="设备名称" name="equipmentName" required>
+          <uni-forms-item label="设备名称" name="equipmentName">
             <uni-easyinput
               v-model="formData.equipmentName"
               placeholder="请输入设备名称"
@@ -242,6 +249,88 @@
 import api, { BASE_URL } from "@/api/index";
 import { onMounted, ref } from "vue";
 
+// 预设系统名称列表
+const systemNamePresets = [
+  "火灾报警控制器",
+  "烟感探测器",
+  "温感探测器",
+  "手动火灾报警按钮",
+  "消火栓按钮",
+  "声光警报器",
+  "消防应急广播",
+  "消防电话",
+  "输入模块",
+  "输出模块",
+  "输入输出模块",
+  "火灾显示盘",
+  "可燃气体探测器",
+  "喷淋头",
+  "湿式报警阀",
+  "干式报警阀",
+  "预作用报警阀",
+  "雨淋报警阀",
+  "水流指示器",
+  "信号阀",
+  "末端试水装置",
+  "喷淋泵",
+  "稳压泵",
+  "气压罐",
+  "室内消火栓箱",
+  "消火栓栓头",
+  "消防水带",
+  "消防水枪",
+  "消火栓泵",
+  "消防水箱",
+  "室外消火栓",
+  "水泵接合器",
+  "七氟丙烷灭火系统",
+  "IG541 混合气体灭火系统",
+  "二氧化碳灭火系统",
+  "气溶胶灭火系统",
+  "气瓶",
+  "瓶头阀",
+  "选择阀",
+  "喷嘴",
+  "气体灭火控制器",
+  "紧急启停按钮",
+  "放气指示灯",
+  "泡沫液储罐",
+  "泡沫比例混合器",
+  "泡沫产生器",
+  "泡沫炮",
+  "泡沫消火栓",
+  "排烟风机",
+  "正压送风机",
+  "排烟口",
+  "送风口",
+  "排烟防火阀",
+  "防火阀",
+  "补风系统",
+  "防火门",
+  "防火卷帘",
+  "防火窗",
+  "防火封堵材料",
+  "应急照明灯",
+  "疏散指示标志灯",
+  "应急照明控制器",
+  "集中电源",
+  "分配电装置",
+  "消防水池",
+  "消防水箱",
+  "消防水泵",
+  "稳压设备",
+  "水泵接合器",
+  "消防水管网",
+  "细水雾灭火系统",
+  "干粉灭火系统",
+  "固定消防炮灭火系统",
+  "厨房设备自动灭火装置",
+  "电动汽车充电桩灭火系统",
+  "隧道消防系统",
+  "大空间智能灭火系统",
+  "其他",
+];
+
 const formRef = ref(null);
 const equipmentId = ref(null);
 
@@ -267,9 +356,6 @@ const imageList = ref([]);
 const rules = {
   equipmentCode: {
     rules: [{ required: true, errorMessage: "请输入设备编号" }],
-  },
-  equipmentName: {
-    rules: [{ required: true, errorMessage: "请输入设备名称" }],
   },
   location: { rules: [{ required: true, errorMessage: "请输入具体位置" }] },
 };
@@ -424,6 +510,12 @@ const confirmSystem = () => {
   showSystemPicker.value = false;
 };
 
+// 系统预设选择
+const onSystemPresetChange = (e) => {
+  const index = e.detail.value;
+  formData.value.equipmentType = systemNamePresets[index];
+};
+
 // 选择图片
 const chooseImage = () => {
   uni.chooseImage({
@@ -510,12 +602,18 @@ const handleSave = async () => {
       buildingId: formData.value.buildingId,
       floor: formData.value.floor,
       equipmentType: formData.value.equipmentType,
+      systemName: formData.value.equipmentType, // 增加系统名称字段
       equipmentName: formData.value.equipmentName,
       brand: formData.value.brand,
+      manufacturer: formData.value.brand, // 增加生产厂家字段
       warrantyEndDate: formData.value.warrantyEndDate,
+      expiryDate: formData.value.warrantyEndDate, // 增加有效日期字段
+      expireDate: formData.value.warrantyEndDate, // 增加有效日期字段 (常用别名)
       quantity: Number(formData.value.quantity) || 1,
       location: formData.value.location,
       specifications: formData.value.specifications,
+      specification: formData.value.specifications, // 增加规格型号字段
+      model: formData.value.specifications, // 增加规格型号字段
       remark: formData.value.remark,
       imageUrls: imageList.value.map((img) => img.serverUrl).join(","),
     };
@@ -525,8 +623,21 @@ const handleSave = async () => {
       uni.showToast({ title: "保存成功", icon: "success" });
       setTimeout(() => {
         uni.$emit("refreshEquipmentList");
-        // 返回两级页面（回到列表）
-        uni.navigateBack({ delta: 2 });
+        // 查找“设备管理”首页在栈中的位置，直接返回以刷新全部分类
+        const pages = getCurrentPages();
+        let delta = 0;
+        for (let i = pages.length - 1; i >= 0; i--) {
+          const route = pages[i].route;
+          if (route.includes("pages/equipment/index")) {
+            delta = pages.length - 1 - i;
+            break;
+          }
+        }
+        if (delta > 0) {
+          uni.navigateBack({ delta: delta });
+        } else {
+          uni.navigateBack();
+        }
       }, 1500);
     } else {
       uni.showToast({ title: res.msg || "保存失败", icon: "none" });
@@ -576,6 +687,29 @@ onMounted(() => {
   border-radius: 16rpx;
   padding: 20rpx 24rpx;
   padding-bottom: 40rpx;
+}
+
+.system-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.preset-picker {
+  flex-shrink: 0;
+}
+
+.preset-btn {
+  padding: 10rpx 24rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  color: #e53935;
+  border: 1rpx solid #ddd;
 }
 
 /* 选择器包装 */

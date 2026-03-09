@@ -1,13 +1,15 @@
 <template>
   <view class="page">
     <!-- 顶部导航 -->
-    <view class="nav-header">
-      <view class="nav-back" @tap="goBack">
-        <text class="back-icon">‹</text>
-      </view>
-      <text class="nav-title">维保签到</text>
-      <view class="nav-placeholder"></view>
-    </view>
+    <uni-nav-bar
+      fixed
+      status-bar
+      left-icon="back"
+      title="维保签到"
+      background-color="#e53935"
+      color="#ffffff"
+      @clickLeft="goBack"
+    />
 
     <!-- 地图区域 -->
     <view class="map-container">
@@ -100,6 +102,22 @@
         </view>
 
         <view class="drawer-body">
+          <!-- 新增关联任务下拉 -->
+          <view class="task-section">
+            <text class="section-label">关联任务 (可选)</text>
+            <picker
+              class="task-picker"
+              :range="taskList"
+              range-key="taskName"
+              @change="onTaskChange"
+            >
+              <view class="picker-value">
+                {{ selectedTaskName || "请选择关联任务" }}
+                <text class="picker-arrow">▾</text>
+              </view>
+            </picker>
+          </view>
+
           <view class="upload-section">
             <text class="section-label">现场照片 (必传)</text>
             <view class="upload-grid">
@@ -147,7 +165,7 @@
 
 <script setup>
 import api, { BASE_URL } from "@/api/index";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 const latitude = ref(21.8567);
 const longitude = ref(111.9632);
 const markers = ref([]);
@@ -155,12 +173,54 @@ const currentAddress = ref("");
 const selectedCompanyName = ref("");
 const selectedCompanyId = ref(null);
 const selectedTaskId = ref(null);
+const selectedTaskName = ref("");
 
 const recentList = ref([]);
+const taskList = ref([]);
 const showDrawer = ref(false);
 const checkType = ref("0"); // 0: 签到, 1: 签退
 const imageList = ref([]);
 const remark = ref("正常打卡");
+
+// 监听公司ID变化，获取对应任务
+watch(selectedCompanyId, (newVal) => {
+  if (newVal) {
+    fetchTasks();
+  }
+});
+
+// 获取公司任务列表
+const fetchTasks = async () => {
+  if (!selectedCompanyId.value) return;
+  try {
+    const res = await api.getCheckInTaskList({
+      companyId: selectedCompanyId.value,
+    });
+    if (res && (res.code === 200 || res.code === 0)) {
+      taskList.value = res.rows || res.data || [];
+      // 如果当前已经有关联任务，更新显示的名称
+      if (selectedTaskId.value) {
+        const task = taskList.value.find(
+          (t) => t.taskId == selectedTaskId.value,
+        );
+        if (task) {
+          selectedTaskName.value = task.taskName;
+        }
+      }
+    }
+  } catch (e) {
+    console.error("获取任务列表失败", e);
+  }
+};
+
+const onTaskChange = (e) => {
+  const index = e.detail.value;
+  const task = taskList.value[index];
+  if (task) {
+    selectedTaskId.value = task.taskId;
+    selectedTaskName.value = task.taskName;
+  }
+};
 
 // 统一处理图片全路径 - 微信小程序要求HTTPS
 const getFullUrl = (url) => {
@@ -259,6 +319,7 @@ const openDrawer = (type) => {
   showDrawer.value = true;
   imageList.value = [];
   remark.value = "正常打卡";
+  fetchTasks(); // 每次打开抽屉刷新任务列表
 };
 
 // 关闭抽屉
@@ -450,6 +511,7 @@ onMounted(async () => {
         if ((res.code === 200 || res.code === 0) && res.data) {
           selectedCompanyId.value = res.data.companyId;
           selectedCompanyName.value = res.data.companyName || "关联公司";
+          selectedTaskName.value = res.data.taskName || "";
         }
       } catch (err) {
         console.error("获取任务详情失败", err);
@@ -485,43 +547,6 @@ onMounted(async () => {
   background: #f5f5f5;
   display: flex;
   flex-direction: column;
-}
-
-.nav-header {
-  height: calc(160rpx + env(safe-area-inset-top));
-  background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 30rpx;
-  padding-top: calc(60rpx + env(safe-area-inset-top));
-  box-sizing: border-box;
-  flex-shrink: 0;
-  z-index: 100;
-}
-
-.nav-back {
-  width: 60rpx;
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.back-icon {
-  font-size: 48rpx;
-  color: #fff;
-  font-weight: bold;
-}
-
-.nav-title {
-  font-size: 34rpx;
-  font-weight: bold;
-  color: #fff;
-}
-
-.nav-placeholder {
-  width: 60rpx;
 }
 
 .map-container {
@@ -770,6 +795,27 @@ onMounted(async () => {
   margin-bottom: 20rpx;
 }
 
+.task-picker {
+  width: 100%;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  padding: 24rpx 20rpx;
+  box-sizing: border-box;
+}
+
+.picker-value {
+  font-size: 28rpx;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.picker-arrow {
+  color: #999;
+  font-size: 24rpx;
+}
+
 .upload-grid {
   display: flex;
   flex-wrap: wrap;
@@ -845,5 +891,11 @@ onMounted(async () => {
   font-size: 32rpx;
   font-weight: bold;
   margin-top: 20rpx;
+}
+
+/* 覆盖 uni-nav-bar 样式 */
+:deep(.uni-nav-bar-text) {
+  font-size: 34rpx !important;
+  font-weight: bold !important;
 }
 </style>

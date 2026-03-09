@@ -160,7 +160,7 @@
 
 <script setup>
 import api from "@/api/index";
-import { onShow } from "@dcloudio/uni-app";
+import { onLoad, onShow } from "@dcloudio/uni-app";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
 const typeName = ref("设备列表");
@@ -285,7 +285,7 @@ const loadEquipmentList = async () => {
 
     const res = await api.getEquipmentList({
       companyId: companyId,
-      equipmentType: typeCode.value,
+      equipmentType: "", // 获取全部，然后在前端根据 typeCode 过滤，保证与 index.vue 逻辑一致
       pageNum: 1,
       pageSize: 500,
     });
@@ -316,12 +316,7 @@ const refreshList = () => {
   loadEquipmentList();
 };
 
-onMounted(() => {
-  // 获取页面参数
-  const pages = getCurrentPages();
-  const currentPage = pages[pages.length - 1];
-  const options = currentPage.options || {};
-
+onLoad((options) => {
   if (options.typeName) {
     typeName.value = decodeURIComponent(options.typeName);
   }
@@ -339,16 +334,13 @@ onMounted(() => {
   uni.$on("refreshEquipmentList", refreshList);
 });
 
+onMounted(() => {
+  // 保持 onMounted 为空或移除相关逻辑，逻辑已移至 onLoad
+});
+
 // 页面显示时刷新数据
 onShow(() => {
-  // 从缓存读取该类型的设备列表，避免 API 重新筛选导致数据丢失
-  const items = uni.getStorageSync("currentTypeEquipments");
-  if (items && Array.isArray(items) && items.length > 0) {
-    equipmentList.value = items;
-  } else {
-    // 只有缓存为空时才重新加载
-    loadEquipmentList();
-  }
+  loadEquipmentList();
 });
 
 onUnmounted(() => {

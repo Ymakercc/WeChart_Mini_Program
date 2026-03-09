@@ -185,7 +185,8 @@
 
 <script setup>
 import api from "@/api/index";
-import { onMounted, reactive, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
+import { reactive, ref } from "vue";
 
 const recordId = ref(null);
 const taskId = ref(null);
@@ -400,7 +401,7 @@ const saveDetail = async () => {
   }
 };
 
-onMounted(() => {
+onShow(() => {
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1];
   const options = currentPage.options || {};

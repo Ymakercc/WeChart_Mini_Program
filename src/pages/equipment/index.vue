@@ -53,6 +53,7 @@
 
 <script setup>
 import api from "@/api/index";
+import { onShow } from "@dcloudio/uni-app";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
 const equipmentList = ref([]);
@@ -165,9 +166,12 @@ const handleRefresh = () => {
   loadEquipmentList();
 };
 
-onMounted(async () => {
+onShow(async () => {
   await loadCurrentCompany();
   loadEquipmentList();
+});
+
+onMounted(() => {
   uni.$on("refreshEquipmentList", handleRefresh);
 });
 

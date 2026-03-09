@@ -79,7 +79,8 @@
 
 <script setup>
 import api from "@/api/index";
-import { onMounted, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
+import { ref } from "vue";
 
 const activeTab = ref("periodic"); // periodic: 周期任务, temporary: 临时任务
 const taskList = ref([]);
@@ -235,7 +236,10 @@ const getStatusText = (status) => {
   return statusMap[status] || "待执行";
 };
 
-onMounted(async () => {
+onShow(async () => {
+  pageNum.value = 1;
+  taskList.value = [];
+  hasMore.value = true;
   await loadCurrentCompany();
   loadTaskList();
 });

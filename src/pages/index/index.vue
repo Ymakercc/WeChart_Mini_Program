@@ -161,7 +161,7 @@ const appList = ref([
     url: "/pages/task/index",
   },
   {
-    name: "巡查测试",
+    name: "巡检测试",
     icon: "/static/appIcon/test.png",
     color: "#43a047",
     url: "/pages/inspection/index",

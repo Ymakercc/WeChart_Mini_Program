@@ -147,7 +147,8 @@
 
 <script setup>
 import api from "@/api/index";
-import { onMounted, ref } from "vue";
+import { onShow } from "@dcloudio/uni-app";
+import { ref } from "vue";
 
 const recordId = ref(null);
 const recordType = ref("0");
@@ -293,7 +294,7 @@ const submitMaintenance = async () => {
   }
 };
 
-onMounted(() => {
+onShow(() => {
   // 获取页面参数
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1];

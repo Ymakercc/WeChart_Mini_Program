@@ -334,6 +334,13 @@ export const validateLocation = (data) => {
   return post("/api/fire/checkIn/validateLocation", data);
 };
 
+/**
+ * 获取签到任务列表
+ */
+export const getCheckInTaskList = (data) => {
+  return post("/fire/checkIn/listTasksByCompany", data);
+};
+
 // ==================== 文件上传 ====================
 
 /**
@@ -439,6 +446,7 @@ export default {
   addCheckIn,
   getCheckInDetail,
   validateLocation,
+  getCheckInTaskList,
   // 报告
   getReportList,
   getReportDetail,
