@@ -58,8 +58,8 @@
           </view>
 
           <!-- 任务状态 -->
-          <view class="task-status" :class="getStatusClass(item.status)">
-            <text>{{ getStatusText(item.status) }}</text>
+          <view class="task-status" :class="getStatusClass(item.taskStatus)">
+            <text>{{ getStatusText(item.taskStatus) }}</text>
           </view>
         </view>
 
@@ -162,7 +162,7 @@ const loadTaskList = async () => {
 
     const res = await api.getMyTaskList({
       companyId: currentCompanyId.value,
-      status: "",
+      taskStatus: "",
       taskType: activeTab.value === "periodic" ? "0" : "1", // 0: 周期任务, 1: 临时任务
       params: {
         beginTime: beginTime,
@@ -173,15 +173,21 @@ const loadTaskList = async () => {
     });
 
     if (res.code === 200 || res.code === 0) {
-      const rows = res.rows || res.data?.rows || [];
+      let rows = res.rows || res.data?.rows || [];
+
+      // 前端二次过滤：根据 taskType 过滤
+      const targetType = activeTab.value === "periodic" ? "0" : "1";
+      rows = rows.filter((item) => item.taskType === targetType);
+
       if (pageNum.value === 1) {
         taskList.value = rows;
       } else {
         taskList.value = [...taskList.value, ...rows];
       }
 
-      // 判断是否还有更多
-      hasMore.value = rows.length >= pageSize.value;
+      // 判断是否还有更多 (这里由于是前端过滤，hasMore 的逻辑可能需要调整，但暂按原逻辑处理)
+      hasMore.value =
+        (res.rows || res.data?.rows || []).length >= pageSize.value;
     }
   } catch (e) {
     console.error("获取任务列表失败:", e);
@@ -199,11 +205,11 @@ const loadMore = () => {
   }
 };
 
-// 跳转到任务详情
+// 跳转到任务操作选择页
 const goTaskDetail = (item) => {
   uni.setStorageSync("currentTask", item);
   uni.navigateTo({
-    url: `/pages/task/detail?id=${item.taskId}`,
+    url: `/pages/task/action?id=${item.taskId}`,
   });
 };
 

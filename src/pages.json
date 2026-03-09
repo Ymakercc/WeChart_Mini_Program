@@ -161,6 +161,13 @@
       }
     },
     {
+      "path": "pages/task/action",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "选择操作"
+      }
+    },
+    {
       "path": "pages/task/detail",
       "style": {
         "navigationStyle": "custom",

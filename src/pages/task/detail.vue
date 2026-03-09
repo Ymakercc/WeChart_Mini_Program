@@ -1,12 +1,12 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ firetest: recordType === '1' }">
     <!-- 导航栏 -->
     <uni-nav-bar
       fixed
       status-bar
       left-icon="back"
-      title="系统设备"
-      background-color="#e53935"
+      :title="recordType === '1' ? '消防设施测试' : '系统设备'"
+      :background-color="recordType === '1' ? '#ff9800' : '#e53935'"
       color="#ffffff"
       @clickLeft="goBack"
     />
@@ -83,6 +83,7 @@ const taskId = ref(null);
 const loading = ref(false);
 const taskInfo = ref({});
 const systemList = ref([]);
+const recordType = ref("0"); // 0: 常规维保, 1: 消防设施测试
 
 // 返回
 const goBack = () => {
@@ -100,7 +101,7 @@ const loadTaskDetail = async () => {
 
   try {
     loading.value = true;
-    const res = await api.getTaskDetail(taskId.value);
+    const res = await api.getTaskDetail(taskId.value, recordType.value);
 
     if (res.code === 200 || res.code === 0) {
       const data = res.data || {};
@@ -108,7 +109,9 @@ const loadTaskDetail = async () => {
 
       // 如果详情接口返回系统列表
       if (data.systems && Array.isArray(data.systems)) {
-        systemList.value = data.systems;
+        systemList.value = data.systems.filter(
+          (item) => item.recordType === recordType.value,
+        );
       } else {
         // 否则单独获取系统列表
         loadSystemList();
@@ -133,10 +136,13 @@ const loadSystemList = async () => {
 
   try {
     loading.value = true;
-    const res = await api.getTaskDetail(taskId.value);
+    const res = await api.getTaskDetail(taskId.value, recordType.value);
 
     if (res.code === 200 || res.code === 0) {
-      systemList.value = res.data || res.rows || [];
+      const rows = res.data || res.rows || [];
+      systemList.value = rows.filter(
+        (item) => item.recordType === recordType.value,
+      );
     }
   } catch (e) {
     console.error("获取系统列表失败:", e);
@@ -149,7 +155,7 @@ const loadSystemList = async () => {
 const goSystemDetail = (item) => {
   uni.setStorageSync("currentSystem", item);
   uni.navigateTo({
-    url: `/pages/task/system?recordId=${item.recordId}`,
+    url: `/pages/task/system?recordId=${item.recordId}&recordType=${recordType.value}`,
   });
 };
 
@@ -158,6 +164,11 @@ onMounted(() => {
   const pages = getCurrentPages();
   const currentPage = pages[pages.length - 1];
   const id = currentPage.options?.id;
+  const type = currentPage.options?.recordType;
+
+  if (type !== undefined) {
+    recordType.value = type;
+  }
 
   if (id) {
     taskId.value = id;
@@ -257,6 +268,10 @@ onMounted(() => {
   color: #1976d2;
 }
 
+.firetest .stat-item {
+  color: #f57c00;
+}
+
 /* 右侧状态和箭头 */
 .system-right {
   position: absolute;
@@ -277,6 +292,11 @@ onMounted(() => {
 .status-text.pending {
   color: #1976d2;
   background: rgba(25, 118, 210, 0.1);
+}
+
+.firetest .status-text.pending {
+  color: #f57c00;
+  background: rgba(245, 124, 0, 0.1);
 }
 
 .status-text.completed {

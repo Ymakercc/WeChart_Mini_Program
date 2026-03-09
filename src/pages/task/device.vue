@@ -1,12 +1,12 @@
 <template>
-  <view class="page">
+  <view class="page" :class="{ firetest: recordType === '1' }">
     <!-- 导航栏 -->
     <uni-nav-bar
       fixed
       status-bar
       left-icon="back"
       :title="deviceInfo.itemName || '设备详情'"
-      background-color="#e53935"
+      :background-color="recordType === '1' ? '#ff9800' : '#e53935'"
       color="#ffffff"
       @clickLeft="goBack"
     />
@@ -189,6 +189,7 @@ import { onMounted, reactive, ref } from "vue";
 
 const recordId = ref(null);
 const taskId = ref(null);
+const recordType = ref("0");
 const loading = ref(false);
 const deviceInfo = ref({});
 const itemList = ref([]);
@@ -225,11 +226,13 @@ const loadItemList = async () => {
       if (data.equipment) {
         deviceInfo.value = data.equipment;
       }
-      itemList.value = (data.checkItems || data.items || []).map((item) => ({
-        ...item,
-        faultDescription: item.faultDescription || "",
-        checkResult: item.checkResult || "0", // 默认为0未检查
-      }));
+      itemList.value = (data.checkItems || data.items || [])
+        .filter((item) => item.recordType === recordType.value)
+        .map((item) => ({
+          ...item,
+          faultDescription: item.faultDescription || "",
+          checkResult: item.checkResult || "0", // 默认为0未检查
+        }));
     }
   } catch (e) {
     console.error("获取检查项列表失败:", e);
@@ -329,14 +332,32 @@ const getStatusLabel = (val) => {
   return option ? option.label : "请选择";
 };
 
-// 选择图片 (简单实现)
+// 选择图片
 const chooseImage = () => {
   uni.chooseImage({
     count: 3,
-    success: (res) => {
-      // 实际开发中应该上传图片获取URL
-      // 这里暂不做上传，仅演示
-      uni.showToast({ title: "请先实现文件上传", icon: "none" });
+    sizeType: ["compressed"],
+    success: async (res) => {
+      const tempFilePaths = res.tempFilePaths;
+      uni.showLoading({ title: "上传中..." });
+
+      for (const path of tempFilePaths) {
+        try {
+          const uploadRes = await api.uploadFile(path);
+          if (uploadRes.code === 200 || uploadRes.code === 0) {
+            const currentImages = modalForm.faultImages
+              ? modalForm.faultImages.split(",").filter((s) => s)
+              : [];
+            if (currentImages.length < 5) {
+              currentImages.push(uploadRes.fileName || uploadRes.data.url);
+              modalForm.faultImages = currentImages.join(",");
+            }
+          }
+        } catch (e) {
+          console.error("图片上传失败:", e);
+        }
+      }
+      uni.hideLoading();
     },
   });
 };
@@ -386,6 +407,7 @@ onMounted(() => {
 
   recordId.value = options.recordId;
   taskId.value = options.taskId;
+  recordType.value = options.recordType || "0";
 
   const cached = uni.getStorageSync("currentDevice");
   if (cached) {
@@ -469,6 +491,16 @@ onMounted(() => {
 .check-btn.normal {
   border-color: #4caf50;
   color: #4caf50;
+}
+
+.firetest .check-btn.normal {
+  border-color: #ff9800;
+  color: #ff9800;
+}
+
+.firetest .check-btn.normal.active {
+  background: #ff9800;
+  color: #fff;
 }
 .check-btn.normal.active {
   background: #4caf50;
@@ -693,6 +725,19 @@ onMounted(() => {
   background: #1976d2;
   color: #fff;
   border: 2rpx solid #1976d2;
+}
+
+.firetest .btn-confirm {
+  background: #ff9800;
+  border-color: #ff9800;
+}
+
+.firetest .radio-circle {
+  border-color: #ff9800;
+}
+
+.firetest .radio-inner {
+  background: #ff9800;
 }
 
 /* 覆盖 uni-nav-bar 样式 */

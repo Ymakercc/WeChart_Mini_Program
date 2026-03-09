@@ -202,8 +202,9 @@ export const getMyTaskList = (data) => {
 /**
  * 获取任务详情
  */
-export const getTaskDetail = (taskId) => {
-  return get(`/api/fire/task/detail/${taskId}`);
+export const getTaskDetail = (taskId, recordType) => {
+  const params = recordType !== undefined ? { recordType } : {};
+  return get(`/api/fire/task/detail/${taskId}`, params);
 };
 
 /**
@@ -250,6 +251,13 @@ export const updateFaultDesc = (data) => {
  */
 export const updateCheckDetail = (data) => {
   return post("/api/fire/task/updateCheckDetail", data);
+};
+
+/**
+ * 更新第二级设备维护信息（消防测试专用）
+ */
+export const updateMaintenance = (data) => {
+  return post("/api/fire/task/updateMaintenance", data);
 };
 
 // ==================== 维保测试（巡检管理） =================---
@@ -418,6 +426,7 @@ export default {
   updateCheckResult,
   updateFaultDesc,
   updateCheckDetail,
+  updateMaintenance,
   // 巡检
   getInspectionList,
   getMyInspectionList,
